@@ -1,0 +1,25 @@
+{
+  "title": "Archiver",
+  "description": "Archive your content using the Wayback Machine.",
+  "version": "1.0.0",
+  "homepage": "http://wordpress.org/plugins/archiver",
+  "author": {
+    "name": "Mickey Kay",
+    "email": "mickey@mickeykaycreative.com",
+    "url": "http://mickeykaycreative.com?utm_source=archiver&utm_medium=plugin-repo&utm_campaign=WordPress%20Plugins"
+  },
+  "devDependencies": {
+    "grunt": "latest",
+    "load-grunt-tasks": "latest",
+    "grunt-dev-update": "latest",
+    "grunt-prompt": "latest",
+    "grunt-text-replace": "latest",
+    "grunt-wp-readme-to-markdown": "latest",
+    "grunt-wp-i18n": "latest",
+    "grunt-contrib-copy": "^0.7.0",
+    "grunt-contrib-uglify": "^0.7.0",
+    "grunt-contrib-cssmin": "^0.14.0",
+    "grunt-contrib-watch": "~0.6.1"
+  },
+  "keywords": []
+}
