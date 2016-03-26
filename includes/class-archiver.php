@@ -162,6 +162,11 @@ class Archiver {
 	 */
 	public function trigger_archive( $post_id ) {
 
+		// Don't do anything if the post isn't published.
+		if ( 'publish' != get_post_status( $post_id ) || wp_is_post_revision( $post_id ) ) {
+			return;
+		}
+
 		$url = get_permalink( $post_id );
 		$archive_link = $this->trigger_url_archive( $url );
 
