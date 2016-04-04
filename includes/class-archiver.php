@@ -79,10 +79,13 @@ class Archiver {
      *
      * @since  1.0.0
      *
+     * @see    See https://github.com/internetarchive/wayback/tree/master/wayback-cdx-server
+     *
      * @var    string
      */
-    protected $wayback_machine_url_save = 'https://web.archive.org/save/';
-    protected $wayback_machine_url_view = 'https://web.archive.org';
+	protected $wayback_machine_url_save           = 'https://web.archive.org/save/';
+	protected $wayback_machine_url_fetch_archives = 'https://web.archive.org/cdx/';
+	protected $wayback_machine_url_view           = 'https://web.archive.org/web/';
 
 	/**
 	 * The instance of this class.
@@ -222,22 +225,99 @@ class Archiver {
 
 		global $post;
 
-		$archives = maybe_unserialize( get_post_meta( $post->ID, 'archiver_archive_links', true ) );
+		$snapshots = $this->get_post_snapshots( $post->ID );
 
-		if ( $archives ) {
+		// If the snapshots fetch failed, just output the error.
+		if ( is_wp_error( $snapshots ) ) {
+			esc_html_e( $snapshots->get_error_message() );
+			return;
+		}
+
+		if ( $snapshots ) {
+
+			$date_format = get_option( 'date_format' );
+			$time_format = get_option( 'time_format' );
 
 			echo '<ul>';
 
-			foreach( $archives as $archive ) {
+			foreach( $snapshots as $snapshot ) {
 
-				$url = $this->wayback_machine_url_view . $archive['url'];
-				$date_time = date_i18n( get_option( 'date_format' ) . ' @ ' . get_option( 'time_format' ), strtotime( $archive['date_time'] ) );
+				$adjusted_date = get_date_from_gmt( $snapshot['timestamp'] );
+
+
+				$url = $this->wayback_machine_url_view . $snapshot['timestamp'] . '/' . $snapshot['original'];
+				$date_time = date_i18n( $date_format . ' @ ' . $time_format, strtotime( $adjusted_date ) );
 
 				echo '<li><a href="' . $url . '" target="_blank">' . $date_time . '</a></li>';
+
 			}
 
 			echo '</ul>';
 
+			echo '<hr />';
+
+			printf( '<a href="%s" target="_external">%s</a>',
+				$this->wayback_machine_url_view . '*/' . get_permalink( $post->ID ),
+				esc_html__( 'See all snapshots &rarr;', 'archiver' )
+			);
+
+		}
+
+	}
+
+	public function get_post_snapshots( $post_id= 0 ) {
+
+		if ( ! $post_id ) {
+			$post_id = get_the_ID();
+		}
+
+		$permalink = get_permalink( $post_id );
+
+		$url = add_query_arg( array(
+			'url'    => $permalink,
+			'output' => 'json',
+			), $this->wayback_machine_url_fetch_archives );
+
+		$response = wp_remote_get( $url );
+
+		if ( 200 == wp_remote_retrieve_response_code( $response ) ) {
+
+			$data = json_decode( $response['body'] );
+
+			// Return empty array if no data exists for this url.
+			if ( empty( $data ) ) {
+				return array();
+			}
+
+			// Grab the first item, which is the map of field columns.
+			$field_columns = $data[0];
+			unset( $data[0] );
+
+			// Reverse data since it comes in chronologically.
+			$data = array_reverse( $data );
+
+			// Set limit on how many snapshots to output.
+			$data = array_slice( $data, 0, apply_filters( 'archiver_snapshot_count', 20 ) );
+
+			// Set up snapshots.
+			$snapshots = array();
+
+			foreach( $data as $snapshot ) {
+
+				$keyed_snapshot = array();
+
+				foreach ( $snapshot as $i => $field ) {
+					$keyed_snapshot[ $field_columns[ $i ] ] = $field;
+				}
+
+				$snapshots[] = $keyed_snapshot;
+
+			}
+
+			return $snapshots;
+
+		} else {
+			return new WP_Error( 'wp_remote_get_error', __( 'Attempt to fetch post snapshots failed.', 'archiver' ), $response );
 		}
 
 	}
