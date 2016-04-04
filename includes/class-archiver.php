@@ -126,7 +126,7 @@ class Archiver {
 
 		$this->slug = 'archiver';
 		$this->name = __( 'Archiver', 'archiver' );
-		$this->version = '1.0.0';
+		$this->version = '0.0.1';
 		$this->options = get_option( $this->slug );
 
 		// Set up internationalization.
@@ -182,7 +182,7 @@ class Archiver {
 	private function trigger_url_archive( $url ) {
 
 		// Ping archive machine.
-		$wayback_machine_save_url = $this->wayback_machine_url_save . 'http://mickeykay.me'; // $url goes here when ready
+		$wayback_machine_save_url = $this->wayback_machine_url_save . $url;
 		$response = wp_remote_post( $wayback_machine_save_url );
 
 		$archive_link = ( ! empty( $response['headers']['content-location'] ) ) ? $response['headers']['content-location'] : '';
@@ -206,14 +206,13 @@ class Archiver {
 		array_unshift( $archives, $new_archive );
 
 		update_post_meta( $post_id, 'archiver_archive_links', $archives );
-		error_log( print_r($archives, true) );
 
 	}
 
 	public function add_post_metabox() {
 		add_meta_box(
 			'archiver_post',
-			__( 'Post Archives', 'archiver' ),
+			__( 'Archives', 'archiver' ),
 			array( $this, 'add_archive_metabox' ),
 			array( 'post', 'page' ),
 			'side',
@@ -233,17 +232,19 @@ class Archiver {
 			return;
 		}
 
-		if ( $snapshots ) {
+		if ( ! empty( $snapshots ) ) {
 
 			$date_format = get_option( 'date_format' );
 			$time_format = get_option( 'time_format' );
+			$gmt_offset = get_option( 'gmt_offset' );
 
 			echo '<ul>';
 
 			foreach( $snapshots as $snapshot ) {
 
-				$adjusted_date = get_date_from_gmt( $snapshot['timestamp'] );
-
+				// Convert to Y-m-d H:i:s format for get_date_from_gmt().
+				$date_time = date( 'Y-m-d H:i:s', strtotime( $snapshot['timestamp'] ) );
+				$adjusted_date = get_date_from_gmt( $date_time );
 
 				$url = $this->wayback_machine_url_view . $snapshot['timestamp'] . '/' . $snapshot['original'];
 				$date_time = date_i18n( $date_format . ' @ ' . $time_format, strtotime( $adjusted_date ) );
@@ -261,6 +262,8 @@ class Archiver {
 				esc_html__( 'See all snapshots &rarr;', 'archiver' )
 			);
 
+		} else {
+			esc_html_e( 'There are no archives for this URL.', 'nerdwallet' );
 		}
 
 	}
