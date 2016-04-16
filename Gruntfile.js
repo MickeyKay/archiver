@@ -38,6 +38,13 @@ module.exports = function( grunt ) {
 				}]
 			}
 		},
+		wp_readme_to_markdown: {
+	    	readme: {
+	    		files: {
+	    			'readme.md': 'readme.txt'
+	    		},
+	    	},
+	    },
 	    copy: {
 			svnAssets: {
 				cwd: 'assets/',
@@ -181,17 +188,7 @@ module.exports = function( grunt ) {
             options: {
 				livereload: true, debounceDelay: 2000
 			}
-        },
-		wp_readme_to_markdown: {
-			your_target: {
-	      		files: {
-	      			'readme.md': 'readme.txt'
-	      		},
-	      		options:{
-   					screenshot_url: '',
-				},
- 		 	},
-		}
+        }
 	} );
 
 	grunt.registerTask( 'build', [

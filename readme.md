@@ -1,12 +1,12 @@
 # Archiver #
-**Contributors:**      McGuive7  
-**Donate link:**       http://wordpress.org/plugins/archiver  
-**Tags:**              archive, post, content, wayback, machine  
-**Requires at least:** 3.5  
-**Tested up to:**      4.1  
-**Stable tag:**        0.0.1  
-**License:**           GPLv2 or later  
-**License URI:**       http://www.gnu.org/licenses/gpl-2.0.html  
+**Contributors:**      McGuive7
+**Donate link:**       http://wordpress.org/plugins/archiver
+**Tags:**              archive, post, content, wayback, machine
+**Requires at least:** 3.5
+**Tested up to:**      4.1
+**Stable tag:**        0.0.1
+**License:**           GPLv2 or later
+**License URI:**       http://www.gnu.org/licenses/gpl-2.0.html
 
 Archive your content using the Wayback Machine.
 
@@ -30,7 +30,7 @@ Also available via Github: https://github.com/MickeyKay/archiver
 ## Screenshots ##
 
 ### 1. This screen shot description corresponds to screenshot-1.(png|jpg|jpeg|gif). ###
-![This screen shot description corresponds to screenshot-1.(png|jpg|jpeg|gif).]()
+![This screen shot description corresponds to screenshot-1.(png|jpg|jpeg|gif).](http://ps.w.org/archiver/assets/screenshot-1.png)
 
 
 
