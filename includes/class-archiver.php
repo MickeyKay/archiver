@@ -252,7 +252,7 @@ class Archiver {
 		$response = $this->trigger_url_snapshot( $url );
 
 		if ( is_wp_error( $response ) ) {
-			wp_send_json_error( $response->get_error_messages()[0] );
+			wp_send_json_error( $response->get_error_codes()[0] . ': ' . $response->get_error_messages()[0] );
 		} else {
 			wp_send_json_success();
 		}
@@ -281,13 +281,11 @@ class Archiver {
 
 		if ( is_wp_error( $response ) ) {
 			return $response;
+		} elseif ( ! empty( $response['headers']['x-archive-wayback-runtime-error'] ) ) {
+			return new WP_Error( 'wayback_machine_error', $response['headers']['x-archive-wayback-runtime-error'], $response );
+		} elseif ( ! empty( $response['headers']['content-location'] ) ) {
+			return $response['headers']['content-location'];
 		}
-
-		if ( ! empty( $response['headers']['content-location'] ) ) {
-			$archive_link = $response['headers']['content-location'];
-		}
-
-		return $archive_link;
 
 	}
 
@@ -465,7 +463,7 @@ class Archiver {
 
 		$wp_admin_bar->add_menu( array(
 			'id'    => 'archiver',
-			'title'  => sprintf( '%s <span class="ab-icon dashicons-before dashicons-image-rotate"></span>', __( 'Archiver', 'achiver' ) ),
+			'title'  => sprintf( '%s <span class="ab-icon dashicons dashicons-update"></span>', __( 'Archiver', 'achiver' ) ),
 			'href'  => '',
 		) );
 
