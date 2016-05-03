@@ -69,6 +69,14 @@ class Archiver {
 	 */
 	protected $snapshot_max_count = 20;
 
+	/**
+	 * Minification prefix.
+	 *
+	 * @since    1.0.0
+	 * @access   protected
+	 */
+	protected $min_suffix = '';
+
     /**
      * Wayback machine constants.
      *
@@ -117,19 +125,20 @@ class Archiver {
 	 */
 	public function __construct( $args ) {
 
-		$this->plugin_file = $args['plugin_file'];
-
 		$this->slug = 'archiver';
 		$this->name = __( 'Archiver', 'archiver' );
 
 		// Set up base plugin configuration - run late to ensure post types are already registered.
 		add_action( 'init', array( $this, 'init' ), 999 );
 
-		// Set up archive trigger actions.
+		// Set up automated archive trigger actions.
 		add_action( 'save_post',      array( $this, 'trigger_post_snapshot' ) );
 		add_action( 'created_term',   array( $this, 'trigger_term_snapshot' ), 10, 3 );
 		add_action( 'edited_term',    array( $this, 'trigger_term_snapshot' ), 10, 3 );
 		add_action( 'profile_update', array( $this, 'trigger_user_snapshot' ), 10, 3 );
+
+		// Set up manual archive trigger actions.
+		add_action( 'wp_ajax_trigger_archive', array( $this, 'trigger_ajax_snapshot' ) );
 
 		// Add Post Type metaboxes.
 		add_action( 'add_meta_boxes', array( $this, 'add_post_meta_box' ) );
@@ -145,12 +154,23 @@ class Archiver {
 		// Add menu bar links.
 		add_action( 'admin_bar_menu', array( $this, 'add_admin_bar_links' ), 999 );
 
+		// Register scripts and styles.
+		add_action( 'wp_enqueue_scripts', array( $this, 'register_scripts_and_styles' ), 5 );
+		add_action( 'admin_enqueue_scripts', array( $this, 'register_scripts_and_styles' ), 5 );
+
+		// Enqueue scripts and styles.
+		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
+
 	}
 
 	public function init() {
 
 		// Set up internationalization.
 		$this->set_locale();
+
+		// Set up minification prefix.
+		$this->min_suffix = ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) ? '' : '.min';
 
 		// Set up and filter content types to archive.
 		$this->post_types = apply_filters( 'archive_post_types', get_post_types() );
@@ -222,6 +242,27 @@ class Archiver {
 	}
 
 	/**
+	 * Trigger a snapshot via Ajax.
+	 *
+	 * @since 1.0.0
+	 */
+	public function trigger_ajax_snapshot() {
+
+		$url = $_REQUEST['url'];
+		$response = $this->trigger_url_snapshot( $url );
+
+		if ( is_wp_error( $response ) ) {
+			wp_send_json_error( $response->get_error_messages()[0] );
+		} else {
+			wp_send_json_success();
+		}
+
+		// Kill the Ajax!
+		wp_die();
+
+	}
+
+	/**
 	 * Trigger a URL to be archived on the Wayback Machine.
 	 *
 	 * @since 1.0.0
@@ -237,6 +278,10 @@ class Archiver {
 		$response = wp_remote_get( $wayback_machine_save_url );
 
 		$archive_link = '';
+
+		if ( is_wp_error( $response ) ) {
+			return $response;
+		}
 
 		if ( ! empty( $response['headers']['content-location'] ) ) {
 			$archive_link = $response['headers']['content-location'];
@@ -418,16 +463,28 @@ class Archiver {
 			$snapshot_count .= '+';
 		}
 
-		$args = array(
-			'id' => 'archiver',
-			'title' => __( 'Archives', 'achiver' ) . " ({$snapshot_count})",
-			'href' => $archive_link,
-			'meta' => array(
-				'class'  => 'archiver-link',
+		$wp_admin_bar->add_menu( array(
+			'id'    => 'archiver',
+			'title'  => sprintf( '%s <span class="ab-icon dashicons-before dashicons-image-rotate"></span>', __( 'Archiver', 'achiver' ) ),
+			'href'  => '',
+		) );
+
+		$wp_admin_bar->add_node( array(
+			'parent' => 'archiver',
+			'id'     => 'archiver-archives',
+			'title'  => __( 'Archives', 'achiver' ) . " ({$snapshot_count})",
+			'href'   => $archive_link,
+			'meta'   => array(
 				'target' => '_blank',
 			)
-		);
-		$wp_admin_bar->add_node($args);
+		) );
+
+		$wp_admin_bar->add_node( array(
+			'parent' => 'archiver',
+			'id'     => 'archiver-trigger',
+			'title'  => __( 'Trigger Snapshot', 'achiver' ),
+			'href'   => '#',
+		) );
 
 	}
 
@@ -606,6 +663,56 @@ class Archiver {
 		 */
 		return apply_filters( 'archive_permalink_public', $permalink );
 
+	}
+
+	/**
+	 * Register scripts and styles.
+	 *
+	 * @since 1.0.0
+	 */
+	public function register_scripts_and_styles() {
+
+		wp_register_script(
+			'archiver',
+			ARCHIVER_PLUGIN_DIR_URL . 'js/archiver' . $this->min_suffix . '.js',
+			array( 'jquery' ),
+			true
+		);
+
+		wp_register_style(
+			'archiver',
+			ARCHIVER_PLUGIN_DIR_URL . 'css/archiver' . $this->min_suffix . '.css'
+		);
+
+		// Include JS vars.
+		$archiver_vars = array(
+			'ajax_url' => admin_url( 'admin-ajax.php' ),
+			'url'      => $this->get_current_permalink(),
+		);
+		wp_localize_script( 'archiver', 'archiver', $archiver_vars );
+
+	}
+
+	/**
+	 * Enqueue scripts and styles.
+	 *
+	 * @since 1.0.0
+	 */
+	public function enqueue_scripts() {
+		wp_enqueue_script( 'archiver' );
+		wp_enqueue_style( 'archiver' );
+	}
+
+	/**
+	 * Enqueue admin scripts and styles.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param strong $hook Current screen hook.
+	 */
+	public function admin_enqueue_scripts( $hook ) {
+		wp_enqueue_script( 'archiver' );
+		wp_enqueue_style( 'archiver' );
 	}
 
 }

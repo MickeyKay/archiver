@@ -30,9 +30,8 @@ module.exports = function( grunt ) {
 				files: [{
 					expand: true,
 					src: [
-						'public/**/*.css',
-						'admin/**/*.css',
-						'!**/*.min.css'
+						'css/*.css',
+						'!css/*.min.css'
 					],
 					ext: '.min.css',
 				}]
@@ -153,17 +152,13 @@ module.exports = function( grunt ) {
 	    		files: [{
 	    			expand: true,
 	    			src: [
-	    				'public/**/*.js',
-	                	'admin/**/*.js',
-	                	'!**/*.min.js',
+	    				'js/*.js',
+	                	'!js/*.min.js',
 	                ],
 	    			ext: '.min.js',
           			extDot: 'first'
 	    		}],
 	    		options: {
-					mangle: {
-						except: ['jQuery']
-					},
 					sourceMap: true
 				}
 	    	}
@@ -171,17 +166,15 @@ module.exports = function( grunt ) {
 	    watch: {
 			cssmin: {
                 files: [
-                	'public/**/*.css',
-                	'admin/**/*.css',
-                	'!**/*.min.css',
+                	'css/*.css',
+                	'!css/*.min.css',
                 ],
                 tasks: 'cssmin'
             },
             uglify: {
                 files: [
-                	'public/**/*.js',
-                	'admin/**/*.js',
-                	'!**/*.min.js',
+                	'js/*.js',
+                	'!js/*.min.js',
                 ],
                 tasks: 'uglify'
             },

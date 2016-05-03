@@ -28,6 +28,9 @@ if ( ! defined( 'WPINC' ) ) {
 	die;
 }
 
+define( 'ARCHIVER_PLUGIN_DIR_URL', plugin_dir_url( __FILE__ ) );
+define( 'ARCHIVER_PLUGIN_DIR_PATH', plugin_dir_path( __FILE__ ) );
+
 register_activation_hook( __FILE__, 'activate_archiver' );
 /**
  * The code that runs during plugin activation.
@@ -63,14 +66,7 @@ require plugin_dir_path( __FILE__ ) . 'includes/class-archiver.php';
  *
  * @since    1.0.0
  */
-function run_archiver() {
-
-	// Pass main plugin file through to plugin class for later use.
-	$args = array(
-		'plugin_file' => __FILE__,
-	);
-
-	$plugin = Archiver::get_instance( $args );
-
+function archiver_run() {
+	$plugin = Archiver::get_instance();
 }
-run_archiver();
+archiver_run();

@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Archiver 1.0.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/archiver\n"
-"POT-Creation-Date: 2016-05-03 06:58:00+00:00\n"
+"POT-Creation-Date: 2016-05-03 08:48:56+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -17,35 +17,41 @@ msgstr ""
 msgid "Archiver"
 msgstr ""
 
-#: includes/class-archiver.php:258 includes/class-archiver.php:281
-#: includes/class-archiver.php:316 includes/class-archiver.php:423
+#: includes/class-archiver.php:303 includes/class-archiver.php:326
+#: includes/class-archiver.php:361 includes/class-archiver.php:475
 #: svn/tags/0.0.1/includes/class-archiver.php:215
-#: svn/tags/1.0.0/includes/class-archiver.php:247
-#: svn/tags/1.0.0/includes/class-archiver.php:265
-#: svn/tags/1.0.0/includes/class-archiver.php:290
-#: svn/trunk/includes/class-archiver.php:247
-#: svn/trunk/includes/class-archiver.php:265
-#: svn/trunk/includes/class-archiver.php:290
+#: svn/tags/1.0.0/includes/class-archiver.php:258
+#: svn/tags/1.0.0/includes/class-archiver.php:281
+#: svn/tags/1.0.0/includes/class-archiver.php:316
+#: svn/tags/1.0.0/includes/class-archiver.php:423
+#: svn/trunk/includes/class-archiver.php:258
+#: svn/trunk/includes/class-archiver.php:281
+#: svn/trunk/includes/class-archiver.php:316
+#: svn/trunk/includes/class-archiver.php:423
 msgid "Archives"
 msgstr ""
 
-#: includes/class-archiver.php:394
+#: includes/class-archiver.php:439
 #: svn/tags/0.0.1/includes/class-archiver.php:262
-#: svn/tags/1.0.0/includes/class-archiver.php:351
-#: svn/trunk/includes/class-archiver.php:351
+#: svn/tags/1.0.0/includes/class-archiver.php:394
+#: svn/trunk/includes/class-archiver.php:394
 msgid "See all snapshots &rarr;"
 msgstr ""
 
-#: includes/class-archiver.php:398
-#: svn/tags/1.0.0/includes/class-archiver.php:355
-#: svn/trunk/includes/class-archiver.php:355
+#: includes/class-archiver.php:443
+#: svn/tags/1.0.0/includes/class-archiver.php:398
+#: svn/trunk/includes/class-archiver.php:398
 msgid "There are no archives of this URL."
 msgstr ""
 
-#: includes/class-archiver.php:491
+#: includes/class-archiver.php:485
+msgid "Trigger Snapshot"
+msgstr ""
+
+#: includes/class-archiver.php:548
 #: svn/tags/0.0.1/includes/class-archiver.php:323
-#: svn/tags/1.0.0/includes/class-archiver.php:408
-#: svn/trunk/includes/class-archiver.php:408
+#: svn/tags/1.0.0/includes/class-archiver.php:491
+#: svn/trunk/includes/class-archiver.php:491
 msgid "Attempt to fetch post snapshots failed."
 msgstr ""
 
