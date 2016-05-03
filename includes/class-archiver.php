@@ -460,6 +460,12 @@ class Archiver {
 	public function add_admin_bar_links( $wp_admin_bar ) {
 
 		$url = $this->get_current_permalink();
+
+		// Only proceed if we can generate a URL for this page.
+		if ( ! $url ) {
+			return;
+		}
+
 		$archive_link = $this->wayback_machine_url_view . '*/' . $url;
 
 		$snapshots = $this->get_post_snapshots();
