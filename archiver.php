@@ -14,7 +14,7 @@
  * Plugin Name:       Archiver
  * Plugin URI:        http://wordpress.org/plugins/archiver
  * Description:       Archive your content using the Wayback Machine.
- * Version:           0.0.1
+ * Version:           1.0.0
  * Author:            Mickey Kay
  * Author URI:        http://mickeykaycreative.com?utm_source=archiver&utm_medium=plugin-repo&utm_campaign=WordPress%20Plugins/
  * License:           GPL-2.0+

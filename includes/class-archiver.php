@@ -30,20 +30,10 @@
 class Archiver {
 
 	/**
-	 * The main plugin file.
-	 *
-	 * @since    1.0.0
-	 * @access   protected
-	 * @var      string    $plugin_file    The main plugin file.
-	 */
-	protected $plugin_file;
-
-	/**
 	 * The unique identifier of this plugin.
 	 *
 	 * @since    1.0.0
 	 * @access   protected
-	 * @var      string    $slug    The string used to uniquely identify this plugin.
 	 */
 	protected $slug;
 
@@ -52,27 +42,24 @@ class Archiver {
 	 *
 	 * @since    1.0.0
 	 * @access   protected
-	 * @var      string    $name    The plugin display name.
 	 */
 	protected $name;
 
 	/**
-	 * The current version of the plugin.
+	 * Post types to archive.
 	 *
 	 * @since    1.0.0
 	 * @access   protected
-	 * @var      string    $version    The current version of the plugin.
 	 */
-	protected $version;
+	protected $post_types;
 
 	/**
-     * Plugin options.
-     *
-     * @since  1.0.0
-     *
-     * @var    string
-     */
-    protected $options;
+	 * Taxonomies to archive.
+	 *
+	 * @since    1.0.0
+	 * @access   protected
+	 */
+	protected $taxonomies;
 
     /**
      * Wayback machine constants.
@@ -94,7 +81,7 @@ class Archiver {
 	 * @access   protected
 	 * @var      Archiver    $instance    The instance of this class.
 	 */
-	private static $instance = null;
+	protected static $instance = null;
 
 	/**
      * Creates or returns an instance of this class.
@@ -126,17 +113,37 @@ class Archiver {
 
 		$this->slug = 'archiver';
 		$this->name = __( 'Archiver', 'archiver' );
-		$this->version = '0.0.1';
-		$this->options = get_option( $this->slug );
+
+		// Set up base plugin configuration.
+		add_action( 'init', array( $this, 'init' ) );
+
+		// Set up archive trigger actions.
+		add_action( 'save_post',      array( $this, 'trigger_post_snapshot' ) );
+		add_action( 'created_term',   array( $this, 'trigger_term_snapshot' ), 10, 3 );
+		add_action( 'edited_term',    array( $this, 'trigger_term_snapshot' ), 10, 3 );
+		add_action( 'profile_update', array( $this, 'trigger_user_snapshot' ), 10, 3 );
+
+		// Add Post Type metaboxes.
+		add_action( 'add_meta_boxes', array( $this, 'add_post_meta_box' ) );
+
+		// Add Term metaboxes.
+		add_action( 'admin_init', array( $this, 'add_term_meta_box' ) );
+
+		// Add User metabox.
+		add_action( 'admin_init', array( $this, 'add_user_meta_box' ) );
+		add_action( 'show_user_profile', array( $this, 'output_user_meta_box' ) );
+		add_action( 'edit_user_profile', array( $this, 'output_user_meta_box' ) );
+
+	}
+
+	public function init() {
 
 		// Set up internationalization.
-		add_action( 'plugins_loaded', array( $this, 'set_locale' ) );
+		$this->set_locale();
 
-		// Set up post save actions.
-		add_action( 'save_post', array( $this, 'trigger_archive' ) );
-
-		// Add metabox.
-		add_action( 'add_meta_boxes', array( $this, 'add_post_metabox' ) );
+		// Set up and filter content types to archive.
+		$this->post_types = apply_filters( 'archive_post_types', get_post_types() );
+		$this->taxonomies = apply_filters( 'archive_taxonomies', get_taxonomies() );
 
 	}
 
@@ -144,9 +151,8 @@ class Archiver {
 	 * Define the locale for this plugin for internationalization.
 	 *
 	 * @since    1.0.0
-	 * @access   private
 	 */
-	public function set_locale() {
+	protected function set_locale() {
 
 		load_plugin_textdomain(
 			$this->slug,
@@ -157,13 +163,13 @@ class Archiver {
 	}
 
 	/**
-	 * Trigger a post archive.
+	 * Trigger a post snapshot.
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param int $post_id ID of the post to archve.
+	 * @param int $post_id ID of the post to archive.
 	 */
-	public function trigger_archive( $post_id ) {
+	public function trigger_post_snapshot( $post_id ) {
 
 		// Don't do anything if the post isn't published.
 		if ( 'publish' != get_post_status( $post_id ) || wp_is_post_revision( $post_id ) ) {
@@ -171,60 +177,143 @@ class Archiver {
 		}
 
 		$url = get_permalink( $post_id );
-		$archive_link = $this->trigger_url_archive( $url );
-
-		if ( $archive_link ) {
-			$this->add_post_archive( $post_id, $archive_link );
-		}
+		$this->trigger_url_snapshot( $url );
 
 	}
 
-	private function trigger_url_archive( $url ) {
+	/**
+	 * Trigger a taxonomy term snapshot.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param int $term_id  ID of the taxonomy term to archive.
+	 * @param int $taxonomy Taxonomy to which the current term belongs.
+	 */
+	public function trigger_term_snapshot( $term_id, $taxonomy_id, $taxonomy ) {
+
+		$url = get_term_link( $term_id, $taxonomy );
+		$this->trigger_url_snapshot( $url );
+
+	}
+
+	/**
+	 * Trigger a user snapshot.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param int $user_id  ID of the user to archive.
+	 */
+	public function trigger_user_snapshot( $user_id ) {
+
+		$url = get_author_posts_url( $user_id );
+		$this->trigger_url_snapshot( $url );
+
+	}
+
+	/**
+	 * Trigger a URL to be archived on the Wayback Machine.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string $url The URL to archive.
+	 *
+	 * @return string The link to the newly created archive, if it exists.
+	 */
+	protected function trigger_url_snapshot( $url ) {
 
 		// Ping archive machine.
 		$wayback_machine_save_url = $this->wayback_machine_url_save . $url;
-		$response = wp_remote_post( $wayback_machine_save_url );
+		$response = wp_remote_get( $wayback_machine_save_url );
 
-		$archive_link = ( ! empty( $response['headers']['content-location'] ) ) ? $response['headers']['content-location'] : '';
+		$archive_link = '';
+
+		if ( ! empty( $response['headers']['content-location'] ) ) {
+			$archive_link = $response['headers']['content-location'];
+		}
 
 		return $archive_link;
 
 	}
 
-	private function add_post_archive( $post_id, $archive_link ) {
+	/**
+	 * Add the archive metabox to posts (and all post types).
+	 *
+	 * @since 1.0.0
+	 */
+	public function add_post_meta_box() {
 
-		$current_date_time = current_time( 'mysql' );
-
-		$new_archive = array(
-			'url'       => $archive_link,
-			'date_time' => $current_date_time,
-		);
-
-		$archives = maybe_unserialize( get_post_meta( $post_id, 'archiver_archive_links', true ) );
-
-		$archives = $archives ? $archives : array();
-		array_unshift( $archives, $new_archive );
-
-		update_post_meta( $post_id, 'archiver_archive_links', $archives );
-
-	}
-
-	public function add_post_metabox() {
 		add_meta_box(
 			'archiver_post',
 			__( 'Archives', 'archiver' ),
-			array( $this, 'add_archive_metabox' ),
-			array( 'post', 'page' ),
+			array( $this, 'add_archiver_metabox' ),
+			$this->post_types,
 			'side',
 			'default'
 		);
+
 	}
 
-	public function add_archive_metabox() {
+	public function add_term_meta_box() {
 
-		global $post;
+		$archiver_taxonomy_slugs = array_map(
+			create_function( '$taxonomy', 'return "archiver-" . $taxonomy;'),
+			$this->taxonomies
+		);
 
-		$snapshots = $this->get_post_snapshots( $post->ID );
+		add_meta_box(
+			'archiver_terms',
+			__( 'Archives', 'archiver' ),
+			array( $this, 'add_archiver_metabox' ),
+			$archiver_taxonomy_slugs,
+			'side',
+			'default'
+		);
+
+		foreach ( $this->taxonomies as $taxonomy ) {
+			add_action( "{$taxonomy}_edit_form", array( $this, 'output_term_meta_box' ) );
+		}
+
+	}
+
+	public function output_term_meta_box() {
+
+		$object_type = get_current_screen()->taxonomy;
+		$this->output_manual_meta_box( $object_type );
+
+
+	}
+
+	public function add_user_meta_box() {
+
+		add_meta_box(
+			'archiver_terms',
+			__( 'Archives', 'archiver' ),
+			array( $this, 'add_archiver_metabox' ),
+			array( 'archiver-user' ),
+			'side',
+			'default'
+		);
+
+	}
+
+	public function output_user_meta_box() {
+		$this->output_manual_meta_box( 'user' );
+	}
+
+	public function output_manual_meta_box( $object_type ) {
+
+		// Enqueue
+		wp_enqueue_script( 'post' );
+
+		echo '<div id="poststuff">';
+		do_meta_boxes( 'archiver-' . $object_type, 'side', '' );
+		echo '</div>';
+
+	}
+
+	public function add_archiver_metabox() {
+
+		$snapshots = $this->get_post_snapshots();
 
 		// If the snapshots fetch failed, just output the error.
 		if ( is_wp_error( $snapshots ) ) {
@@ -258,23 +347,19 @@ class Archiver {
 			echo '<hr />';
 
 			printf( '<a href="%s" target="_external">%s</a>',
-				$this->wayback_machine_url_view . '*/' . get_permalink( $post->ID ),
+				$this->wayback_machine_url_view . '*/' . $this->get_current_permalink_admin(),
 				esc_html__( 'See all snapshots &rarr;', 'archiver' )
 			);
 
 		} else {
-			esc_html_e( 'There are no archives for this URL.', 'nerdwallet' );
+			esc_html_e( 'There are no archives of this URL.', 'archiver' );
 		}
 
 	}
 
-	public function get_post_snapshots( $post_id= 0 ) {
+	public function get_post_snapshots() {
 
-		if ( ! $post_id ) {
-			$post_id = get_the_ID();
-		}
-
-		$permalink = get_permalink( $post_id );
+		$permalink = $this->get_current_permalink();
 
 		$url = add_query_arg( array(
 			'url'    => $permalink,
@@ -325,26 +410,89 @@ class Archiver {
 
 	}
 
-	function get_nice_date_time( ) {
-		$time_string = '<time class="entry-date published updated" datetime="%1$s">%2$s</time>';
-		if ( get_the_time( 'U' ) !== get_the_modified_time( 'U' ) ) {
-			$time_string = '<time class="entry-date published" datetime="%1$s">%2$s</time><time class="updated" datetime="%3$s">%4$s</time>';
+	public function get_current_permalink() {
+
+		$permalink = '';
+
+		if ( is_admin() ) {
+			$permalink = $this->get_current_permalink_admin();
+		} else {
+			$permalink = $this->get_current_permalink_public();
 		}
-		$time_string = sprintf( $time_string,
-			esc_attr( get_the_date( 'c' ) ),
-			esc_html( get_the_date() ),
-			esc_attr( get_the_modified_date( 'c' ) ),
-			esc_html( get_the_modified_date() )
-		);
-		$posted_on = sprintf(
-			esc_html_x( 'Posted on %s', 'post date', '_s' ),
-			'<a href="' . esc_url( get_permalink() ) . '" rel="bookmark">' . $time_string . '</a>'
-		);
-		$byline = sprintf(
-			esc_html_x( 'by %s', 'post author', '_s' ),
-			'<span class="author vcard"><a class="url fn n" href="' . esc_url( get_author_posts_url( get_the_author_meta( 'ID' ) ) ) . '">' . esc_html( get_the_author() ) . '</a></span>'
-		);
-		echo '<span class="posted-on">' . $posted_on . '</span><span class="byline"> ' . $byline . '</span>'; // WPCS: XSS OK.
+
+		/**
+		 * Filter the returned permalink.
+		 *
+		 * @since 1.0.0
+		 *
+		 * @param string $permalink The permalink to be filtered.
+		 */
+		return apply_filters( 'archiver_permalink', $permalink );
+
+	}
+
+	/**
+	 * Get the permalink for the current object admin screen.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return string $permalink The permalink of the current admin object.
+	 */
+	public function get_current_permalink_admin() {
+
+		$permalink = '';
+
+		$current_screen = get_current_screen();
+		$object_type = $current_screen->base;
+
+		// Generate permalink based on current object type.
+		switch( $object_type ) {
+
+			// Post.
+			case 'post':
+				global $post;
+				$permalink = get_permalink( $post->ID );
+				break;
+
+			// Taxonomy term.
+			case 'term':
+				global $taxnow, $tag;
+				$taxonomy = $taxnow;
+				$term_id = intval( $tag->term_id );
+				$permalink = get_term_link( $term_id, $taxonomy );
+				break;
+
+			// User.
+			case 'profile':
+			case 'user-edit':
+
+				$user_id = 0;
+
+				/**
+				 * Depending on whether the user we're editing is the
+                 * currently logged in user, or another user, we see
+                 * either the "profile" screen or the "user-edit"
+                 * screen, each of which must be handled differently.
+                 */
+				if ( ! empty( $_GET['user_id'] ) ) {
+					$user_id = intval( $_GET['user_id'] );
+				} else {
+					$user_id = get_current_user_id();
+				}
+
+				$permalink = get_author_posts_url( $user_id );
+				break;
+		}
+
+		/**
+		 * Filter the permalink generated for an admin screen.
+		 *
+		 * @since 1.0.0
+		 *
+		 * @param string $permalink The permalink to be filtered.
+		 */
+		return apply_filters( 'archive_permalink_admin', $permalink );
+
 	}
 
 }

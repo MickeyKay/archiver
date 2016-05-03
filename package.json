@@ -1,7 +1,7 @@
 {
   "title": "Archiver",
   "description": "Archive your content using the Wayback Machine.",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "homepage": "http://wordpress.org/plugins/archiver",
   "author": {
     "name": "Mickey Kay",
