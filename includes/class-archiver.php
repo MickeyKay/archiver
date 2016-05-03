@@ -164,6 +164,13 @@ class Archiver {
 
 	}
 
+	/**
+	 * Initialize basic plugin data/functionality.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return [type] [description]
+	 */
 	public function init() {
 
 		// Set up internationalization.
