@@ -61,6 +61,14 @@ class Archiver {
 	 */
 	protected $taxonomies;
 
+	/**
+	 * The max number of snapshots to retrieve.
+	 *
+	 * @since    1.0.0
+	 * @access   protected
+	 */
+	protected $snapshot_max_count = 20;
+
     /**
      * Wayback machine constants.
      *
@@ -114,8 +122,8 @@ class Archiver {
 		$this->slug = 'archiver';
 		$this->name = __( 'Archiver', 'archiver' );
 
-		// Set up base plugin configuration.
-		add_action( 'init', array( $this, 'init' ) );
+		// Set up base plugin configuration - run late to ensure post types are already registered.
+		add_action( 'init', array( $this, 'init' ), 999 );
 
 		// Set up archive trigger actions.
 		add_action( 'save_post',      array( $this, 'trigger_post_snapshot' ) );
@@ -133,6 +141,9 @@ class Archiver {
 		add_action( 'admin_init', array( $this, 'add_user_meta_box' ) );
 		add_action( 'show_user_profile', array( $this, 'output_user_meta_box' ) );
 		add_action( 'edit_user_profile', array( $this, 'output_user_meta_box' ) );
+
+		// Add menu bar links.
+		add_action( 'admin_bar_menu', array( $this, 'add_admin_bar_links' ), 999 );
 
 	}
 
@@ -245,7 +256,7 @@ class Archiver {
 		add_meta_box(
 			'archiver_post',
 			__( 'Archives', 'archiver' ),
-			array( $this, 'add_archiver_metabox' ),
+			array( $this, 'output_archiver_metabox' ),
 			$this->post_types,
 			'side',
 			'default'
@@ -253,6 +264,11 @@ class Archiver {
 
 	}
 
+	/**
+	 * Add the archive metabox to taxonomy terms.
+	 *
+	 * @since 1.0.0
+	 */
 	public function add_term_meta_box() {
 
 		$archiver_taxonomy_slugs = array_map(
@@ -263,7 +279,7 @@ class Archiver {
 		add_meta_box(
 			'archiver_terms',
 			__( 'Archives', 'archiver' ),
-			array( $this, 'add_archiver_metabox' ),
+			array( $this, 'output_archiver_metabox' ),
 			$archiver_taxonomy_slugs,
 			'side',
 			'default'
@@ -275,6 +291,11 @@ class Archiver {
 
 	}
 
+	/**
+	 * Output the archive metabox on taxonomy term screens.
+	 *
+	 * @since 1.0.0
+	 */
 	public function output_term_meta_box() {
 
 		$object_type = get_current_screen()->taxonomy;
@@ -283,12 +304,17 @@ class Archiver {
 
 	}
 
+	/**
+	 * Add the archive metabox to users.
+	 *
+	 * @since 1.0.0
+	 */
 	public function add_user_meta_box() {
 
 		add_meta_box(
 			'archiver_terms',
 			__( 'Archives', 'archiver' ),
-			array( $this, 'add_archiver_metabox' ),
+			array( $this, 'output_archiver_metabox' ),
 			array( 'archiver-user' ),
 			'side',
 			'default'
@@ -296,10 +322,22 @@ class Archiver {
 
 	}
 
+	/**
+	 * Output the archive metabox on user screens.
+	 *
+	 * @since 1.0.0
+	 */
 	public function output_user_meta_box() {
 		$this->output_manual_meta_box( 'user' );
 	}
 
+	/**
+	 * Output a manually created archive metabox (e.g. for terms and users).
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string $object_type Object type for which to output the metabox.
+	 */
 	public function output_manual_meta_box( $object_type ) {
 
 		// Enqueue
@@ -311,7 +349,12 @@ class Archiver {
 
 	}
 
-	public function add_archiver_metabox() {
+	/**
+	 * Output the actual archive metabox.
+	 *
+	 * @since 1.0.0
+	 */
+	public function output_archiver_metabox() {
 
 		$snapshots = $this->get_post_snapshots();
 
@@ -347,7 +390,7 @@ class Archiver {
 			echo '<hr />';
 
 			printf( '<a href="%s" target="_external">%s</a>',
-				$this->wayback_machine_url_view . '*/' . $this->get_current_permalink_admin(),
+				$this->wayback_machine_url_view . '*/' . $this->get_current_permalink(),
 				esc_html__( 'See all snapshots &rarr;', 'archiver' )
 			);
 
@@ -357,16 +400,56 @@ class Archiver {
 
 	}
 
-	public function get_post_snapshots() {
+	/**
+	 * Add archive link(s) to the admin bar.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param WP_Admin_Bar $wp_admin_bar Original admin bar object.
+	 */
+	public function add_admin_bar_links( $wp_admin_bar ) {
 
-		$permalink = $this->get_current_permalink();
+		$url = $this->get_current_permalink();
+		$archive_link = $this->wayback_machine_url_view . '*/' . $url;
 
-		$url = add_query_arg( array(
-			'url'    => $permalink,
+		$snapshots = $this->get_post_snapshots();
+		$snapshot_count = count( $snapshots );
+		if ( $snapshot_count >= $this->snapshot_max_count ) {
+			$snapshot_count .= '+';
+		}
+
+		$args = array(
+			'id' => 'archiver',
+			'title' => __( 'Archives', 'achiver' ) . " ({$snapshot_count})",
+			'href' => $archive_link,
+			'meta' => array(
+				'class'  => 'archiver-link',
+				'target' => '_blank',
+			)
+		);
+		$wp_admin_bar->add_node($args);
+
+	}
+
+	/**
+	 * Get Wayback Machine snapshots for a url.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string $url URL for which to query snapshots.
+	 *
+	 * @return array An array of snapshots for the given URL.
+	 */
+	public function get_post_snapshots( $url = '' ) {
+
+		$url = $url ? $url : $this->get_current_permalink();
+
+		$fetch_url = add_query_arg( array(
+			'url'    => $url,
 			'output' => 'json',
 			), $this->wayback_machine_url_fetch_archives );
 
-		$response = wp_remote_get( $url );
+		$response = wp_remote_get( $fetch_url );
 
 		if ( 200 == wp_remote_retrieve_response_code( $response ) ) {
 
@@ -385,7 +468,7 @@ class Archiver {
 			$data = array_reverse( $data );
 
 			// Set limit on how many snapshots to output.
-			$data = array_slice( $data, 0, apply_filters( 'archiver_snapshot_count', 20 ) );
+			$data = array_slice( $data, 0, apply_filters( 'archiver_snapshot_count', $this->snapshot_max_count ) );
 
 			// Set up snapshots.
 			$snapshots = array();
@@ -410,6 +493,13 @@ class Archiver {
 
 	}
 
+	/**
+	 * Get the permalink of the current screen/page.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return string The public URL of the current page, or an empty string if no public URL exists.
+	 */
 	public function get_current_permalink() {
 
 		$permalink = '';
@@ -432,11 +522,11 @@ class Archiver {
 	}
 
 	/**
-	 * Get the permalink for the current object admin screen.
+	 * Get the permalink for the current object from the admin.
 	 *
 	 * @since 1.0.0
 	 *
-	 * @return string $permalink The permalink of the current admin object.
+	 * @return string $permalink The permalink of the current object.
 	 */
 	public function get_current_permalink_admin() {
 
@@ -492,6 +582,29 @@ class Archiver {
 		 * @param string $permalink The permalink to be filtered.
 		 */
 		return apply_filters( 'archive_permalink_admin', $permalink );
+
+	}
+
+	/**
+	 * Get the permalink for the current object from the front-end.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return string $permalink The permalink of the current object.
+	 */
+	public function get_current_permalink_public() {
+
+		global $wp;
+  		$permalink = add_query_arg( $_SERVER['QUERY_STRING'], '', home_url( $wp->request ) );
+
+		/**
+		 * Filter the permalink generated for an public screen.
+		 *
+		 * @since 1.0.0
+		 *
+		 * @param string $permalink The permalink to be filtered.
+		 */
+		return apply_filters( 'archive_permalink_public', $permalink );
 
 	}
 
