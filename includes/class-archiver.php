@@ -1,18 +1,4 @@
 <?php
-
-/**
- * The file that defines the core plugin class
- *
- * A class definition that includes attributes and functions used across both the
- * public-facing side of the site and the dashboard.
- *
- * @link       http://wordpress.org/plugins/archiver
- * @since      1.0.0
- *
- * @package    Archiver
- * @subpackage Archiver/includes
- */
-
 /**
  * The core plugin class.
  *
@@ -67,7 +53,7 @@ class Archiver {
 	 * @since    1.0.0
 	 * @access   protected
 	 */
-	protected $snapshot_max_count = 20;
+	protected $snapshot_max_count;
 
 	/**
 	 * Minification prefix.
@@ -86,9 +72,9 @@ class Archiver {
      *
      * @var    string
      */
-	protected $wayback_machine_url_save           = 'https://web.archive.org/save/';
-	protected $wayback_machine_url_fetch_archives = 'https://web.archive.org/cdx/';
-	protected $wayback_machine_url_view           = 'https://web.archive.org/web/';
+	protected $wayback_machine_url_save;
+	protected $wayback_machine_url_fetch_archives;
+	protected $wayback_machine_url_view;
 
 	/**
 	 * The instance of this class.
@@ -128,6 +114,29 @@ class Archiver {
 		$this->slug = 'archiver';
 		$this->name = __( 'Archiver', 'archiver' );
 
+		// Set up Wayback Machine API endpoints.
+		$this->wayback_machine_url_save           = 'https://web.archive.org/save/';
+		$this->wayback_machine_url_fetch_archives = 'https://web.archive.org/cdx/';
+		$this->wayback_machine_url_view           = 'https://web.archive.org/web/';
+
+		/**
+		 * Filter default snapshot max count.
+		 *
+		 * Default: 20
+		 *
+		 * @filter archiver_snapshot_max_count
+		 */
+		$this->snapshot_max_count = apply_filters( 'archiver_snapshot_max_count', 20 );
+
+	}
+
+	/**
+	 * Set up base plugin functionality.
+	 *
+	 * @since 1.0.0
+	 */
+	public function run() {
+
 		// Set up base plugin configuration - run late to ensure post types are already registered.
 		add_action( 'init', array( $this, 'init' ), 999 );
 
@@ -138,7 +147,7 @@ class Archiver {
 		add_action( 'profile_update', array( $this, 'trigger_user_snapshot' ), 10, 3 );
 
 		// Set up manual archive trigger actions.
-		add_action( 'wp_ajax_trigger_archive', array( $this, 'trigger_ajax_snapshot' ) );
+		add_action( 'wp_ajax_archiver_trigger_archive', array( $this, 'trigger_ajax_snapshot' ) );
 
 		// Add Post Type metaboxes.
 		add_action( 'add_meta_boxes', array( $this, 'add_post_meta_box' ) );
@@ -254,6 +263,12 @@ class Archiver {
 	 * @since 1.0.0
 	 */
 	public function trigger_ajax_snapshot() {
+
+		$nonce_check = check_ajax_referer( 'archiver_ajax_nonce', 'archiver_ajax_nonce', false );
+
+		if ( ! $nonce_check ) {
+			wp_send_json_error( __( 'The Ajax nonce check failed', 'archiver' ) );
+		}
 
 		$url = $_REQUEST['url'];
 		$response = $this->trigger_url_snapshot( $url );
@@ -536,7 +551,7 @@ class Archiver {
 			$data = array_reverse( $data );
 
 			// Set limit on how many snapshots to output.
-			$data = array_slice( $data, 0, apply_filters( 'archiver_snapshot_count', $this->snapshot_max_count ) );
+			$data = array_slice( $data, 0, $this->snapshot_count );
 
 			// Set up snapshots.
 			$snapshots = array();
@@ -692,13 +707,15 @@ class Archiver {
 
 		wp_register_style(
 			'archiver',
-			ARCHIVER_PLUGIN_DIR_URL . 'css/archiver' . $this->min_suffix . '.css'
+			ARCHIVER_PLUGIN_DIR_URL . 'css/archiver' . $this->min_suffix . '.css',
+			array( 'dashicons' )
 		);
 
 		// Include JS vars.
 		$archiver_vars = array(
-			'ajax_url' => admin_url( 'admin-ajax.php' ),
-			'url'      => $this->get_current_permalink(),
+			'ajax_url'            => admin_url( 'admin-ajax.php' ),
+			'archiver_ajax_nonce' => wp_create_nonce( 'archiver_ajax_nonce' ),
+			'url'                 => $this->get_current_permalink(),
 		);
 		wp_localize_script( 'archiver', 'archiver', $archiver_vars );
 
@@ -710,8 +727,17 @@ class Archiver {
 	 * @since 1.0.0
 	 */
 	public function enqueue_scripts() {
+
+		$url = $this->get_current_permalink();
+
+		// Only proceed if we can generate a URL for this page.
+		if ( ! $url ) {
+			return;
+		}
+
 		wp_enqueue_script( 'archiver' );
 		wp_enqueue_style( 'archiver' );
+		wp_enqueue_style( 'dashicons' );
 	}
 
 	/**

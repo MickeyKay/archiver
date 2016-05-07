@@ -31,26 +31,6 @@ if ( ! defined( 'WPINC' ) ) {
 define( 'ARCHIVER_PLUGIN_DIR_URL', plugin_dir_url( __FILE__ ) );
 define( 'ARCHIVER_PLUGIN_DIR_PATH', plugin_dir_path( __FILE__ ) );
 
-register_activation_hook( __FILE__, 'activate_archiver' );
-/**
- * The code that runs during plugin activation.
- * This action is documented in includes/class-archiver-activator.php
- */
-function activate_archiver() {
-	require_once plugin_dir_path( __FILE__ ) . 'includes/class-archiver-activator.php';
-	Archiver_Activator::activate();
-}
-
-register_deactivation_hook( __FILE__, 'deactivate_archiver' );
-/**
- * The code that runs during plugin deactivation.
- * This action is documented in includes/class-archiver-deactivator.php
- */
-function deactivate_archiver() {
-	require_once plugin_dir_path( __FILE__ ) . 'includes/class-archiver-deactivator.php';
-	Archiver_Deactivator::deactivate();
-}
-
 /**
  * The core plugin class that is used to define internationalization,
  * dashboard-specific hooks, and public-facing site hooks.
@@ -68,5 +48,7 @@ require plugin_dir_path( __FILE__ ) . 'includes/class-archiver.php';
  */
 function archiver_run() {
 	$plugin = Archiver::get_instance();
+	$plugin->run();
+	return $plugin;
 }
 archiver_run();

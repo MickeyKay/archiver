@@ -17,8 +17,9 @@
 			var $topLevelLink = $link.closest( '#wp-admin-bar-archiver' ).addClass( 'archiver-active' );
 
 			var data = {
-				'action': 'trigger_archive',
-				'url': archiver.url
+				'action':               'archiver_trigger_archive',
+				'archiver_ajax_nonce' : archiver.archiver_ajax_nonce,
+				'url':                  archiver.url
 			};
 
 			$.post( ajaxurl, data, function( response ) {
@@ -29,10 +30,10 @@
 					$topLevelLink.addClass( 'archiver-success' );
 				} else {
 					$topLevelLink.addClass( 'archiver-failure' );
-					console.log(response.data);
+					console.warn(response.data);
 				}
 
-				window.setTimeout( function() {
+				setTimeout( function() {
 					$topLevelLink.removeClass( 'archiver-success' ).removeClass( 'archiver-failure' )
 				}, 2000 );
 
