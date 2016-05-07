@@ -49,7 +49,9 @@ Also available via Github: https://github.com/MickeyKay/archiver
 
 == Screenshots ==
 
-1. This screen shot description corresponds to screenshot-1.(png|jpg|jpeg|gif).
+1. Admin bar links to view and manually trigger snapshots.
+2. "Archives" metabox that shows all existing snapshots when editing a post/page/term/etc.
+3. The Wayback Machine archive of all snapshots for your content.
 
 
 == Changelog ==
