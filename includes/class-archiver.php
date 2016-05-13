@@ -32,6 +32,14 @@ class Archiver {
 	protected $name;
 
 	/**
+	 * Minification prefix.
+	 *
+	 * @since    1.0.0
+	 * @access   protected
+	 */
+	protected $min_suffix = '';
+
+	/**
 	 * Post types to archive.
 	 *
 	 * @since    1.0.0
@@ -56,12 +64,12 @@ class Archiver {
 	protected $snapshot_max_count;
 
 	/**
-	 * Minification prefix.
+	 * Permalink for the current screen.
 	 *
 	 * @since    1.0.0
 	 * @access   protected
 	 */
-	protected $min_suffix = '';
+	protected $current_permalink = '';
 
     /**
      * Wayback machine constants.
@@ -585,12 +593,15 @@ class Archiver {
 	 */
 	public function get_current_permalink() {
 
-		$permalink = '';
+		// Attempt to fetch the current permalink if it is not already set.
+		if ( empty( $this->current_permalink ) ) {
 
-		if ( is_admin() ) {
-			$permalink = $this->get_current_permalink_admin();
-		} else {
-			$permalink = $this->get_current_permalink_public();
+			if ( is_admin() ) {
+				$this->current_permalink = $this->get_current_permalink_admin();
+			} else {
+				$this->current_permalink = $this->get_current_permalink_public();
+			}
+
 		}
 
 		/**
@@ -600,7 +611,7 @@ class Archiver {
 		 *
 		 * @param string $permalink The permalink to be filtered.
 		 */
-		return apply_filters( 'archiver_permalink', $permalink );
+		return apply_filters( 'archiver_permalink', $this->current_permalink );
 
 	}
 
