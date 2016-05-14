@@ -151,7 +151,7 @@ class Archiver {
 		 *
 		 * @filter archiver_enable_for_local_host
 		 */
-		$this->enable_for_localhost = apply_filters( 'archiver_enable_for_local_host', __return_true() );
+		$this->enable_for_localhost = apply_filters( 'archiver_enable_for_local_host', __return_false() );
 
 	}
 
@@ -531,8 +531,8 @@ class Archiver {
 
 		$wp_admin_bar->add_node( array(
 			'parent' => 'archiver',
-			'id'     => 'archiver-archives',
-			'title'  => __( 'Archives', 'achiver' ) . " ({$snapshot_count})",
+			'id'     => 'archiver-snapshots',
+			'title'  => __( 'Snapshots', 'archiver' ) . " ({$snapshot_count})",
 			'href'   => $archive_link,
 			'meta'   => array(
 				'target' => '_blank',
