@@ -72,6 +72,14 @@ class Archiver {
 	protected $enable_for_localhost;
 
 	/**
+	 * IP's to check against for localhost detection..
+	 *
+	 * @since    1.0.0
+	 * @access   protected
+	 */
+	protected $localhost_ips;
+
+	/**
      * Wayback machine constants.
      *
      * @since  1.0.0
@@ -153,6 +161,17 @@ class Archiver {
 		 */
 		$this->enable_for_localhost = apply_filters( 'archiver_enable_for_local_host', __return_false() );
 
+		/**
+		 * Filter IP's to check against for determining localhost.
+		 *
+		 * @filter archiver_enable_for_local_host
+		 */
+		$localhost_ips = array(
+			'127.0.0.1',
+			'::1'
+		);
+		$this->localhost_ips = apply_filters( 'archiver_localhost_ips', $localhost_ips );
+
 	}
 
 	/**
@@ -162,12 +181,8 @@ class Archiver {
 	 */
 	public function run() {
 
-		$localhost_ips = array(
-			'127.0.0.1',
-			'::1'
-		);
-
-		if ( ! $this->enable_for_localhost && in_array($_SERVER['REMOTE_ADDR'], $localhost_ips ) ){
+		if ( ! $this->can_run() ) {
+			add_action( 'admin_notices', array( $this, 'do_admin_notice_localhost' ) );
 			return;
 		}
 
@@ -183,8 +198,12 @@ class Archiver {
 		// Set up manual archive trigger actions.
 		add_action( 'wp_ajax_archiver_trigger_archive', array( $this, 'trigger_ajax_snapshot' ) );
 
+		// Add settings page.
+        add_action( 'admin_menu', array( $this, 'add_settings_page' ) );
+        add_action( 'admin_init', array( $this, 'add_settings' ) );
+
 		// Add Post Type metaboxes.
-		add_action( 'add_meta_boxes', array( $this, 'add_post_meta_box' ) );
+        add_action( 'add_meta_boxes', array( $this, 'add_post_meta_box' ) );
 
 		// Add Term metaboxes.
 		add_action( 'admin_init', array( $this, 'add_term_meta_box' ) );
@@ -205,6 +224,26 @@ class Archiver {
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
 
+	}
+
+	/**
+	 * Check whether or not Archiver can run.
+	 *
+	 * This function is used to determine whether or not Archiver can run, based
+	 * on things like localhost vs production server, etc.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return bool Whether or not Archiver's base functionality should run.
+	 */
+	public function can_run() {
+
+		// Check if we're working local, and if that's allowed.
+		if ( ! $this->enable_for_localhost && in_array( $_SERVER['REMOTE_ADDR'], $this->localhost_ips ) ) {
+			return false;
+		}
+
+		return true;
 	}
 
 	/**
@@ -787,6 +826,20 @@ class Archiver {
 	public function admin_enqueue_scripts( $hook ) {
 		wp_enqueue_script( 'archiver' );
 		wp_enqueue_style( 'archiver' );
+	}
+
+	/**
+	 * Output admin notice to indicate localhost.
+	 *
+	 * @since 1.0.0
+	 */
+	public function do_admin_notice_localhost() {
+
+		$class ='notice notice-error is-dismissible';
+		$message = __( "Archiver: it looks like you are working locally, which means your website doesn't have a public URL to create snapshots. Don't worry, Archiver will work just fine on your live site.", 'archiver' );
+
+		printf( '<div class="%s"><p>%s</p></div>', $class, $message );
+
 	}
 
 }
