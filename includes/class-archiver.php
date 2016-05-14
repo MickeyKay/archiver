@@ -64,14 +64,14 @@ class Archiver {
 	protected $snapshot_max_count;
 
 	/**
-	 * Permalink for the current screen.
+	 * Whether to enable Archiver for localhost.
 	 *
 	 * @since    1.0.0
 	 * @access   protected
 	 */
-	protected $current_permalink = '';
+	protected $enable_for_localhost;
 
-    /**
+	/**
      * Wayback machine constants.
      *
      * @since  1.0.0
@@ -83,6 +83,14 @@ class Archiver {
 	protected $wayback_machine_url_save;
 	protected $wayback_machine_url_fetch_archives;
 	protected $wayback_machine_url_view;
+
+	/**
+	 * Permalink for the current screen.
+	 *
+	 * @since    1.0.0
+	 * @access   protected
+	 */
+	protected $current_permalink = '';
 
 	/**
 	 * The instance of this class.
@@ -136,6 +144,15 @@ class Archiver {
 		 */
 		$this->snapshot_max_count = apply_filters( 'archiver_snapshot_max_count', 20 );
 
+		/**
+		 * Filter whether to enable on localhost.
+		 *
+		 * Default: FALSE
+		 *
+		 * @filter archiver_enable_for_local_host
+		 */
+		$this->enable_for_localhost = apply_filters( 'archiver_enable_for_local_host', __return_true() );
+
 	}
 
 	/**
@@ -144,6 +161,15 @@ class Archiver {
 	 * @since 1.0.0
 	 */
 	public function run() {
+
+		$localhost_ips = array(
+			'127.0.0.1',
+			'::1'
+		);
+
+		if ( ! $this->enable_for_localhost && in_array($_SERVER['REMOTE_ADDR'], $localhost_ips ) ){
+			return;
+		}
 
 		// Set up base plugin configuration - run late to ensure post types are already registered.
 		add_action( 'init', array( $this, 'init' ), 999 );
@@ -592,6 +618,8 @@ class Archiver {
 	 * @return string The public URL of the current page, or an empty string if no public URL exists.
 	 */
 	public function get_current_permalink() {
+
+		error_log( print_r($_SERVER['REMOTE_ADDR'], true) );
 
 		// Attempt to fetch the current permalink if it is not already set.
 		if ( empty( $this->current_permalink ) ) {
