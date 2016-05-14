@@ -525,7 +525,7 @@ class Archiver {
 
 		$wp_admin_bar->add_menu( array(
 			'id'    => 'archiver',
-			'title'  => sprintf( '%s <span class="ab-icon dashicons dashicons-update"></span>', __( 'Archiver', 'achiver' ) ),
+			'title'  => __( 'Archiver', 'achiver' ),
 			'href'  => '',
 		) );
 
@@ -542,7 +542,7 @@ class Archiver {
 		$wp_admin_bar->add_node( array(
 			'parent' => 'archiver',
 			'id'     => 'archiver-trigger',
-			'title'  => __( 'Trigger Snapshot', 'achiver' ),
+			'title'  => sprintf( '%s <span class="ab-icon dashicons dashicons-update"></span>', __( 'Trigger Snapshot', 'achiver' ) ),
 			'href'   => '#',
 		) );
 
@@ -618,8 +618,6 @@ class Archiver {
 	 * @return string The public URL of the current page, or an empty string if no public URL exists.
 	 */
 	public function get_current_permalink() {
-
-		error_log( print_r($_SERVER['REMOTE_ADDR'], true) );
 
 		// Attempt to fetch the current permalink if it is not already set.
 		if ( empty( $this->current_permalink ) ) {

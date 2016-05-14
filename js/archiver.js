@@ -13,8 +13,7 @@
 
 			var ajaxurl = ajaxurl || archiver.ajax_url;
 
-			var $link = $( this );
-			var $topLevelLink = $link.closest( '#wp-admin-bar-archiver' ).addClass( 'archiver-active' );
+			var $menuItem = $( this ).closest( 'li' ).addClass( 'archiver-active' );
 
 			var data = {
 				'action':               'archiver_trigger_archive',
@@ -24,17 +23,17 @@
 
 			$.post( ajaxurl, data, function( response ) {
 
-				$topLevelLink.removeClass( 'archiver-active' );
+				$menuItem.removeClass( 'archiver-active' );
 
 				if ( response.success ) {
-					$topLevelLink.addClass( 'archiver-success' );
+					$menuItem.addClass( 'archiver-success' );
 				} else {
-					$topLevelLink.addClass( 'archiver-failure' );
+					$menuItem.addClass( 'archiver-failure' );
 					console.warn(response.data);
 				}
 
 				setTimeout( function() {
-					$topLevelLink.removeClass( 'archiver-success' ).removeClass( 'archiver-failure' )
+					$menuItem.removeClass( 'archiver-success' ).removeClass( 'archiver-failure' )
 				}, 2000 );
 
 			});

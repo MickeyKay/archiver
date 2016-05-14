@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Archiver 1.0.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/archiver\n"
-"POT-Creation-Date: 2016-05-07 22:18:34+00:00\n"
+"POT-Creation-Date: 2016-05-14 17:21:15+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -17,54 +17,29 @@ msgstr ""
 msgid "Archiver"
 msgstr ""
 
-#: includes/class-archiver.php:270
-#: svn/tags/1.0.0/includes/class-archiver.php:270
-#: svn/trunk/includes/class-archiver.php:270
+#: includes/class-archiver.php:304
 msgid "The Ajax nonce check failed"
 msgstr ""
 
-#: includes/class-archiver.php:323 includes/class-archiver.php:346
-#: includes/class-archiver.php:381 includes/class-archiver.php:501
-#: svn/tags/0.0.1/includes/class-archiver.php:215
-#: svn/tags/1.0.0/includes/class-archiver.php:323
-#: svn/tags/1.0.0/includes/class-archiver.php:346
-#: svn/tags/1.0.0/includes/class-archiver.php:381
-#: svn/tags/1.0.0/includes/class-archiver.php:501
-#: svn/trunk/includes/class-archiver.php:323
-#: svn/trunk/includes/class-archiver.php:346
-#: svn/trunk/includes/class-archiver.php:381
-#: svn/trunk/includes/class-archiver.php:501
+#: includes/class-archiver.php:357 includes/class-archiver.php:380
+#: includes/class-archiver.php:415 includes/class-archiver.php:535
 msgid "Archives"
 msgstr ""
 
-#: includes/class-archiver.php:459
-#: svn/tags/0.0.1/includes/class-archiver.php:262
-#: svn/tags/1.0.0/includes/class-archiver.php:459
-#: svn/trunk/includes/class-archiver.php:459
+#: includes/class-archiver.php:493
 msgid "See all snapshots &rarr;"
 msgstr ""
 
-#: includes/class-archiver.php:463
-#: svn/tags/1.0.0/includes/class-archiver.php:463
-#: svn/trunk/includes/class-archiver.php:463
+#: includes/class-archiver.php:497
 msgid "There are no archives of this URL."
 msgstr ""
 
-#: includes/class-archiver.php:511
-#: svn/tags/1.0.0/includes/class-archiver.php:511
-#: svn/trunk/includes/class-archiver.php:511
+#: includes/class-archiver.php:545
 msgid "Trigger Snapshot"
 msgstr ""
 
-#: includes/class-archiver.php:574
-#: svn/tags/0.0.1/includes/class-archiver.php:323
-#: svn/tags/1.0.0/includes/class-archiver.php:574
-#: svn/trunk/includes/class-archiver.php:574
+#: includes/class-archiver.php:608
 msgid "Attempt to fetch post snapshots failed."
-msgstr ""
-
-#: svn/tags/0.0.1/includes/class-archiver.php:266
-msgid "There are no archives for this URL."
 msgstr ""
 
 #. Plugin URI of the plugin/theme
@@ -83,14 +58,4 @@ msgstr ""
 msgid ""
 "http://mickeykaycreative.com?utm_source=archiver&utm_medium=plugin-repo&utm_"
 "campaign=WordPress%20Plugins/"
-msgstr ""
-
-#: svn/tags/0.0.1/includes/class-archiver.php:340
-msgctxt "post date"
-msgid "Posted on %s"
-msgstr ""
-
-#: svn/tags/0.0.1/includes/class-archiver.php:344
-msgctxt "post author"
-msgid "by %s"
 msgstr ""
