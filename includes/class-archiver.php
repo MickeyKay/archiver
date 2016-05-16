@@ -181,40 +181,14 @@ class Archiver {
 	 */
 	public function run() {
 
-		if ( ! $this->can_run() ) {
-			add_action( 'admin_notices', array( $this, 'do_admin_notice_localhost' ) );
-			return;
-		}
-
 		// Set up base plugin configuration - run late to ensure post types are already registered.
 		add_action( 'init', array( $this, 'init' ), 999 );
 
-		// Set up automated archive trigger actions.
-		add_action( 'save_post',      array( $this, 'trigger_post_snapshot' ) );
-		add_action( 'created_term',   array( $this, 'trigger_term_snapshot' ), 10, 3 );
-		add_action( 'edited_term',    array( $this, 'trigger_term_snapshot' ), 10, 3 );
-		add_action( 'profile_update', array( $this, 'trigger_user_snapshot' ), 10, 3 );
-
 		// Set up manual archive trigger actions.
-		add_action( 'wp_ajax_archiver_trigger_archive', array( $this, 'trigger_ajax_snapshot' ) );
+		add_action( 'wp_ajax_archiver_trigger_archive', array( $this, 'ajax_trigger_snapshot' ) );
 
-		// Add settings page.
-        add_action( 'admin_menu', array( $this, 'add_settings_page' ) );
-        add_action( 'admin_init', array( $this, 'add_settings' ) );
-
-		// Add Post Type metaboxes.
-        add_action( 'add_meta_boxes', array( $this, 'add_post_meta_box' ) );
-
-		// Add Term metaboxes.
-		add_action( 'admin_init', array( $this, 'add_term_meta_box' ) );
-
-		// Add User metabox.
-		add_action( 'admin_init', array( $this, 'add_user_meta_box' ) );
-		add_action( 'show_user_profile', array( $this, 'output_user_meta_box' ) );
-		add_action( 'edit_user_profile', array( $this, 'output_user_meta_box' ) );
-
-		// Add menu bar links.
-		add_action( 'admin_bar_menu', array( $this, 'add_admin_bar_links' ), 999 );
+		// Set up dismiss notice functionality.
+		add_action( 'wp_ajax_archiver_dismiss_notice', array( $this, 'ajax_dismiss_notice' ) );
 
 		// Register scripts and styles.
 		add_action( 'wp_enqueue_scripts', array( $this, 'register_scripts_and_styles' ), 5 );
@@ -223,6 +197,38 @@ class Archiver {
 		// Enqueue scripts and styles.
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
+
+		// Set up functionality that should only run if can_run() == true.
+		if ( $this->can_run() ) {
+
+			// Set up automated archive trigger actions.
+			add_action( 'save_post',      array( $this, 'trigger_post_snapshot' ) );
+			add_action( 'created_term',   array( $this, 'trigger_term_snapshot' ), 10, 3 );
+			add_action( 'edited_term',    array( $this, 'trigger_term_snapshot' ), 10, 3 );
+			add_action( 'profile_update', array( $this, 'trigger_user_snapshot' ), 10, 3 );
+
+
+			// Add settings page.
+		    add_action( 'admin_menu', array( $this, 'add_settings_page' ) );
+		    add_action( 'admin_init', array( $this, 'add_settings' ) );
+
+			// Add Post Type metaboxes.
+		    add_action( 'add_meta_boxes', array( $this, 'add_post_meta_box' ) );
+
+			// Add Term metaboxes.
+			add_action( 'admin_init', array( $this, 'add_term_meta_box' ) );
+
+			// Add User metabox.
+			add_action( 'admin_init', array( $this, 'add_user_meta_box' ) );
+			add_action( 'show_user_profile', array( $this, 'output_user_meta_box' ) );
+			add_action( 'edit_user_profile', array( $this, 'output_user_meta_box' ) );
+
+			// Add menu bar links.
+			add_action( 'admin_bar_menu', array( $this, 'add_admin_bar_links' ), 999 );
+
+		} else {
+			add_action( 'admin_notices', array( $this, 'do_admin_notice_localhost' ) );
+		}
 
 	}
 
@@ -335,12 +341,12 @@ class Archiver {
 	 *
 	 * @since 1.0.0
 	 */
-	public function trigger_ajax_snapshot() {
+	public function ajax_trigger_snapshot() {
 
 		$nonce_check = check_ajax_referer( 'archiver_ajax_nonce', 'archiver_ajax_nonce', false );
 
 		if ( ! $nonce_check ) {
-			wp_send_json_error( __( 'The Ajax nonce check failed', 'archiver' ) );
+			wp_send_json_error( __( 'The Ajax nonce check failed.', 'archiver' ) );
 		}
 
 		$url = $_REQUEST['url'];
@@ -352,7 +358,35 @@ class Archiver {
 			wp_send_json_success();
 		}
 
-		// Kill the Ajax!
+		// End Ajax nicely.
+		wp_die();
+
+	}
+
+	/**
+	 * Log dismissed admin notices per-user.
+	 *
+	 * @since 1.0.0
+	 */
+	public function ajax_dismiss_notice() {
+
+		$nonce_check = check_ajax_referer( 'archiver_ajax_nonce', 'archiver_ajax_nonce', false );
+
+		if ( ! $nonce_check ) {
+			wp_send_json_error( __( 'The Ajax nonce check failed', 'archiver' ) );
+		}
+
+		$notice_key = 'archiver_dismiss_notice_' . $_REQUEST['notice_id'];
+		$current_user_id = get_current_user_id();
+
+		if ( ! $current_user_id ) {
+			wp_send_json_error( __( 'There is no current user.', 'archiver' ) );
+		} else {
+			update_user_meta( $current_user_id, $notice_key, true );
+			wp_send_json_success( __( 'User meta updated to dismiss notice.', 'archiver' ) );
+		}
+
+		// End Ajax nicely.
 		wp_die();
 
 	}
@@ -835,10 +869,17 @@ class Archiver {
 	 */
 	public function do_admin_notice_localhost() {
 
-		$class ='notice notice-error is-dismissible';
+		$id = 'archiver-notice-localhost';
+
+		$dismiss_notice_key = 'archiver_dismiss_notice_' . $id;
+		if ( get_user_meta( get_current_user_id(), $dismiss_notice_key ) ) {
+			return;
+		}
+
+		$class = 'archiver-notice notice notice-error is-dismissible';
 		$message = __( "Archiver: it looks like you are working locally, which means your website doesn't have a public URL to create snapshots. Don't worry, Archiver will work just fine on your live site.", 'archiver' );
 
-		printf( '<div class="%s"><p>%s</p></div>', $class, $message );
+		printf( '<div id="%s" class="%s"><p>%s</p></div>', $id, $class, $message );
 
 	}
 
