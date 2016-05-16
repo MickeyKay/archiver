@@ -161,17 +161,6 @@ class Archiver {
 		 */
 		$this->enable_for_localhost = apply_filters( 'archiver_enable_for_local_host', __return_false() );
 
-		/**
-		 * Filter IP's to check against for determining localhost.
-		 *
-		 * @filter archiver_enable_for_local_host
-		 */
-		$localhost_ips = array(
-			'127.0.0.1',
-			'::1'
-		);
-		$this->localhost_ips = apply_filters( 'archiver_localhost_ips', $localhost_ips );
-
 	}
 
 	/**
@@ -189,6 +178,10 @@ class Archiver {
 
 		// Set up dismiss notice functionality.
 		add_action( 'wp_ajax_archiver_dismiss_notice', array( $this, 'ajax_dismiss_notice' ) );
+
+		// Add settings page.
+	    add_action( 'admin_menu', array( $this, 'add_settings_page' ) );
+	    add_action( 'admin_init', array( $this, 'add_settings' ) );
 
 		// Register scripts and styles.
 		add_action( 'wp_enqueue_scripts', array( $this, 'register_scripts_and_styles' ), 5 );
@@ -877,6 +870,121 @@ class Archiver {
 
 		printf( '<div id="%s" class="%s"><p>%s</p></div>', $id, $class, $message );
 
+	}
+
+	/**
+	 * Register settings page.
+	 *
+	 * @since 1.0.0
+	 */
+    public function add_settings_page() {
+
+        add_options_page(
+            $this->name,
+            $this->name,
+            'manage_options',
+            $this->slug,
+            array( $this, 'create_admin_page' )
+        );
+
+    }
+
+    /**
+     * Output the plugin settings page contents.
+     *
+     * @since 1.0.0
+     */
+    public function create_admin_page() {
+    ?>
+        <div class="wrap archiver-settings">
+            <?php screen_icon(); ?>
+            <h2><?php echo $this->name; ?></h2>
+            <form method="post" action="options.php" id="archiver-settings-form">
+            <?php
+                // This prints out all hidden setting fields
+                settings_fields( $this->slug );
+                do_settings_sections( $this->slug );
+            ?>
+                <p>
+                    submit_button();
+                </p>
+            </form>
+        </div>
+    <?php
+    }
+
+    /**
+     * Register plugin settings.
+     *
+     * @since 1.0.0
+     */
+    public function add_settings() {
+
+        register_setting(
+            $this->slug, // Option group
+            $this->slug, // Option name
+            array( $this, 'sanitize' ) // Sanitize
+        );
+
+        add_settings_section(
+            'settings_section_primary', // ID
+            null, // Title
+            null, // Callback
+            $this->slug // Page
+        );
+
+        add_settings_field(
+            'localhost_urls', // ID
+            __( 'Localhost URLs', 'archiver' ), // Title
+            array( $this, 'version_callback' ), // Callback
+             $this->slug, // Page
+            'settings_section_primary', // Section
+            $this->get_versions_list() // Args
+        );
+
+    }
+
+    /**
+     * Get localhost IP's from saved option or default.
+     *
+     * @since 1.0.0
+     *
+     * @return array Localhost IP patterns.
+     */
+    public function get_localhost_ips() {
+
+    	$defaults = array(
+			'127.0.0.1',
+			'::1'
+		);
+
+		$localhost_ips = get_option( $this->slug )['localhost_ips'];
+		$localhost_ips = ( ! empty( $localhost_ips ) ) ? $localhost_ips : $defaults;
+
+		/**
+		 * Filter IP's to check against for determining localhost.
+		 *
+		 * @filter archiver_localhost_ips
+		 */
+		return apply_filters( 'archiver_localhost_ips', $localhost_ips );
+    }
+
+	/**
+	 * Output a checkbox setting.
+	 *
+	 * @since  0.10.0
+	 */
+	public function textarea_callback( $args ) {
+	    $option_name = esc_attr( $this->option_name ) . '[' . $args['id'] . ']';
+	    $option_value = isset( $this->options[ $args['id'] ] ) ? $this->options[ $args['id'] ] : '';
+	    printf(
+	        '<label for="%s"><input type="checkbox" value="1" id="%s" name="%s" %s/> %s</label>',
+	        $args['id'],
+	        $args['id'],
+	        $option_name,
+	        checked( 1, $option_value, false ),
+	        $args['description']
+	    );
 	}
 
 }
