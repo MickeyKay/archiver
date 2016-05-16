@@ -207,11 +207,6 @@ class Archiver {
 			add_action( 'edited_term',    array( $this, 'trigger_term_snapshot' ), 10, 3 );
 			add_action( 'profile_update', array( $this, 'trigger_user_snapshot' ), 10, 3 );
 
-
-			// Add settings page.
-		    add_action( 'admin_menu', array( $this, 'add_settings_page' ) );
-		    add_action( 'admin_init', array( $this, 'add_settings' ) );
-
 			// Add Post Type metaboxes.
 		    add_action( 'add_meta_boxes', array( $this, 'add_post_meta_box' ) );
 
@@ -848,6 +843,7 @@ class Archiver {
 		wp_enqueue_script( 'archiver' );
 		wp_enqueue_style( 'archiver' );
 		wp_enqueue_style( 'dashicons' );
+
 	}
 
 	/**
