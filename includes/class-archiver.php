@@ -877,7 +877,7 @@ class Archiver {
 		}
 
 		$class = 'archiver-notice notice notice-error is-dismissible';
-		$message = __( "Archiver: it looks like you are working locally, which means your website doesn't have a public URL to create snapshots. Don't worry, Archiver will work just fine on your live site.", 'archiver' );
+		$message = __( "Archiver is disabled while you are working locally.", 'archiver' );
 
 		printf( '<div id="%s" class="%s"><p>%s</p></div>', $id, $class, $message );
 
