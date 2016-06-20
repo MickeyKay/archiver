@@ -4,7 +4,7 @@
 **Tags:**              archive, post, content, wayback, machine  
 **Requires at least:** 3.5  
 **Tested up to:**      4.1  
-**Stable tag:**        1.0.0  
+**Stable tag:**        gs  
 **License:**           GPLv2 or later  
 **License URI:**       http://www.gnu.org/licenses/gpl-2.0.html  
 
@@ -54,10 +54,6 @@ Also available via Github: https://github.com/MickeyKay/archiver
 
 ### 2. "Archives" metabox that shows all existing snapshots when editing a post/page/term/etc. ###
 !["Archives" metabox that shows all existing snapshots when editing a post/page/term/etc.](http://ps.w.org/archiver/assets/screenshot-2.png)
-
-### 3. The Wayback Machine archive of all snapshots for your content. ###
-![The Wayback Machine archive of all snapshots for your content.](http://ps.w.org/archiver/assets/screenshot-3.png)
-
 
 
 ## Changelog ##
