@@ -7,6 +7,7 @@
 	$( document ).ready( function() {
 
 		var ajaxurl = ajaxurl || archiver.ajax_url;
+		var $topMenuItem = $( '#wp-admin-bar-archiver' );
 
 		// Trigger snapshot functionality.
 		$( '#wp-admin-bar-archiver-trigger a' ).on( 'click', function( e ) {
@@ -27,13 +28,16 @@
 
 				if ( response.success ) {
 					$menuItem.addClass( 'archiver-success' );
+					$topMenuItem.addClass( 'archiver-success' );
 				} else {
 					$menuItem.addClass( 'archiver-failure' );
+					$topMenuItem.addClass( 'archiver-failure' );
 					console.warn(response.data);
 				}
 
 				setTimeout( function() {
-					$menuItem.removeClass( 'archiver-success' ).removeClass( 'archiver-failure' )
+					$menuItem.removeClass( 'archiver-success' ).removeClass( 'archiver-failure' );
+					$topMenuItem.removeClass( 'archiver-success' ).removeClass( 'archiver-failure' )
 				}, 2000 );
 
 			});

@@ -6,11 +6,11 @@
 	transition: color 0.75s ease;
 }
 
-#wp-admin-bar-archiver .archiver-success a {
+.archiver-success > a {
 	color: #46b450 !important;
 }
 
-#wp-admin-bar-archiver .archiver-failure a {
+.archiver-failure > a {
 	color: #dc3232 !important;
 }
 

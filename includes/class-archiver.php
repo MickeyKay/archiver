@@ -40,22 +40,6 @@ class Archiver {
 	protected $min_suffix = '';
 
 	/**
-	 * Post types to archive.
-	 *
-	 * @since    1.0.0
-	 * @access   protected
-	 */
-	protected $post_types;
-
-	/**
-	 * Taxonomies to archive.
-	 *
-	 * @since    1.0.0
-	 * @access   protected
-	 */
-	protected $taxonomies;
-
-	/**
 	 * The max number of snapshots to retrieve.
 	 *
 	 * @since    1.0.0
@@ -138,6 +122,50 @@ class Archiver {
 		$this->slug = 'archiver';
 		$this->name = __( 'Archiver', 'archiver' );
 
+	}
+
+	/**
+	 * Set up base plugin functionality.
+	 *
+	 * @since 1.0.0
+	 */
+	public function run() {
+
+		// Set up base plugin configuration - run late to ensure post types are already registered.
+		add_action( 'init', array( $this, 'init' ), 999 );
+
+	}
+
+	/**
+	 * Check whether or not Archiver can run.
+	 *
+	 * This function is used to determine whether or not Archiver can run, based
+	 * on things like localhost vs production server, etc.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return bool Whether or not Archiver's base functionality should run.
+	 */
+	public function can_run() {
+
+		// Check if we're working local, and if that's allowed.
+		if ( ! $this->enable_for_localhost && in_array( $_SERVER['REMOTE_ADDR'], $this->localhost_ips ) ) {
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Initialize basic plugin.
+	 *
+	 * @since 1.0.0
+	 */
+	public function init() {
+
+		// Set up internationalization.
+		$this->set_locale();
+
 		// Set up Wayback Machine API endpoints.
 		$this->wayback_machine_url_save           = 'https://web.archive.org/save/';
 		$this->wayback_machine_url_fetch_archives = 'https://web.archive.org/cdx/';
@@ -167,22 +195,13 @@ class Archiver {
 		 * @filter archiver_enable_for_local_host
 		 */
 		$localhost_ips = array(
-			'127.0.0.1',
-			'::1'
+			'12.0.0.1',
+			'::1',
 		);
 		$this->localhost_ips = apply_filters( 'archiver_localhost_ips', $localhost_ips );
 
-	}
-
-	/**
-	 * Set up base plugin functionality.
-	 *
-	 * @since 1.0.0
-	 */
-	public function run() {
-
-		// Set up base plugin configuration - run late to ensure post types are already registered.
-		add_action( 'init', array( $this, 'init' ), 999 );
+		// Set up minification prefix.
+		$this->min_suffix = ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) ? '' : '.min';
 
 		// Set up manual archive trigger actions.
 		add_action( 'wp_ajax_archiver_trigger_archive', array( $this, 'ajax_trigger_snapshot' ) );
@@ -224,47 +243,6 @@ class Archiver {
 		} else {
 			add_action( 'admin_notices', array( $this, 'do_admin_notice_localhost' ) );
 		}
-
-	}
-
-	/**
-	 * Check whether or not Archiver can run.
-	 *
-	 * This function is used to determine whether or not Archiver can run, based
-	 * on things like localhost vs production server, etc.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return bool Whether or not Archiver's base functionality should run.
-	 */
-	public function can_run() {
-
-		// Check if we're working local, and if that's allowed.
-		if ( ! $this->enable_for_localhost && in_array( $_SERVER['REMOTE_ADDR'], $this->localhost_ips ) ) {
-			return false;
-		}
-
-		return true;
-	}
-
-	/**
-	 * Initialize basic plugin data/functionality.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return [type] [description]
-	 */
-	public function init() {
-
-		// Set up internationalization.
-		$this->set_locale();
-
-		// Set up minification prefix.
-		$this->min_suffix = ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) ? '' : '.min';
-
-		// Set up and filter content types to archive.
-		$this->post_types = apply_filters( 'archive_post_types', get_post_types() );
-		$this->taxonomies = apply_filters( 'archive_taxonomies', get_taxonomies() );
 
 	}
 
@@ -420,11 +398,16 @@ class Archiver {
 	 */
 	public function add_post_meta_box() {
 
+		/**
+		 * Filter post types.
+		 */
+		$post_types = apply_filters( 'archive_post_types', get_post_types() );
+
 		add_meta_box(
 			'archiver_post',
 			__( 'Archives', 'archiver' ),
 			array( $this, 'output_archiver_metabox' ),
-			$this->post_types,
+			$post_types,
 			'side',
 			'default'
 		);
@@ -438,9 +421,14 @@ class Archiver {
 	 */
 	public function add_term_meta_box() {
 
+		/**
+		 * Filter taxonomies.
+		 */
+		$taxonomies = apply_filters( 'archive_taxonomies', get_taxonomies() );
+
 		$archiver_taxonomy_slugs = array_map(
 			create_function( '$taxonomy', 'return "archiver-" . $taxonomy;'),
-			$this->taxonomies
+			$taxonomies
 		);
 
 		add_meta_box(
@@ -452,7 +440,7 @@ class Archiver {
 			'default'
 		);
 
-		foreach ( $this->taxonomies as $taxonomy ) {
+		foreach ( $taxonomies as $taxonomy ) {
 			add_action( "{$taxonomy}_edit_form", array( $this, 'output_term_meta_box' ) );
 		}
 
@@ -593,8 +581,11 @@ class Archiver {
 
 		$wp_admin_bar->add_menu( array(
 			'id'    => 'archiver',
-			'title'  => __( 'Archiver', 'achiver' ),
-			'href'  => '',
+			'title' => __( 'Archiver', 'achiver' ),
+			'href'  => $archive_link,
+			'meta'   => array(
+				'target' => '_blank',
+			)
 		) );
 
 		$wp_admin_bar->add_node( array(
