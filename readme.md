@@ -1,10 +1,10 @@
 # Archiver #
-**Contributors:**      McGuive7  
+**Contributors:** [McGuive7](https://profiles.wordpress.org/McGuive7)  
 **Donate link:**       http://wordpress.org/plugins/archiver  
 **Tags:**              archive, post, content, wayback, machine  
 **Requires at least:** 3.5  
 **Tested up to:**      4.1  
-**Stable tag:**        gs  
+**Stable tag:**        1.0.0  
 **License:**           GPLv2 or later  
 **License URI:**       http://www.gnu.org/licenses/gpl-2.0.html  
 
@@ -49,12 +49,8 @@ Also available via Github: https://github.com/MickeyKay/archiver
 
 ## Screenshots ##
 
-### 1. Admin bar links to view and manually trigger snapshots. ###
-![Admin bar links to view and manually trigger snapshots.](http://ps.w.org/archiver/assets/screenshot-1.png)
-
-### 2. "Archives" metabox that shows all existing snapshots when editing a post/page/term/etc. ###
-!["Archives" metabox that shows all existing snapshots when editing a post/page/term/etc.](http://ps.w.org/archiver/assets/screenshot-2.png)
-
+1. Admin bar links to view and manually trigger snapshots.
+2. "Archives" metabox that shows all existing snapshots when editing a post/page/term/etc.
 
 ## Changelog ##
 
