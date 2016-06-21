@@ -798,6 +798,7 @@ class Archiver {
 			'archiver',
 			ARCHIVER_PLUGIN_DIR_URL . 'js/archiver' . $this->min_suffix . '.js',
 			array( 'jquery' ),
+			false,
 			true
 		);
 
