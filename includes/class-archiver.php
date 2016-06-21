@@ -195,7 +195,7 @@ class Archiver {
 		 * @filter archiver_enable_for_local_host
 		 */
 		$localhost_ips = array(
-			'12.0.0.1',
+			'127.0.0.1',
 			'::1',
 		);
 		$this->localhost_ips = apply_filters( 'archiver_localhost_ips', $localhost_ips );
