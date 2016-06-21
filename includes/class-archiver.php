@@ -834,7 +834,6 @@ class Archiver {
 
 		wp_enqueue_script( 'archiver' );
 		wp_enqueue_style( 'archiver' );
-		wp_enqueue_style( 'dashicons' );
 
 	}
 
