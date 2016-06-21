@@ -401,7 +401,7 @@ class Archiver {
 		/**
 		 * Filter post types.
 		 */
-		$post_types = apply_filters( 'archive_post_types', get_post_types() );
+		$post_types = apply_filters( 'archiver_post_types', get_post_types() );
 
 		add_meta_box(
 			'archiver_post',
@@ -424,7 +424,7 @@ class Archiver {
 		/**
 		 * Filter taxonomies.
 		 */
-		$taxonomies = apply_filters( 'archive_taxonomies', get_taxonomies() );
+		$taxonomies = apply_filters( 'archiver_taxonomies', get_taxonomies() );
 
 		$archiver_taxonomy_slugs = array_map(
 			create_function( '$taxonomy', 'return "archiver-" . $taxonomy;'),
@@ -760,7 +760,7 @@ class Archiver {
 		 *
 		 * @param string $permalink The permalink to be filtered.
 		 */
-		return apply_filters( 'archive_permalink_admin', $permalink );
+		return apply_filters( 'archiver_permalink_admin', $permalink );
 
 	}
 
@@ -783,7 +783,7 @@ class Archiver {
 		 *
 		 * @param string $permalink The permalink to be filtered.
 		 */
-		return apply_filters( 'archive_permalink_public', $permalink );
+		return apply_filters( 'archiver_permalink_public', $permalink );
 
 	}
 
