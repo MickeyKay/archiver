@@ -576,7 +576,7 @@ class Archiver {
 		$snapshots = $this->get_post_snapshots();
 		$snapshot_count = count( $snapshots );
 		if ( $snapshot_count >= $this->snapshot_max_count ) {
-			$snapshot_count .= '+';
+			$this->snapshot_max_count .= '+';
 		}
 
 		$wp_admin_bar->add_menu( array(
