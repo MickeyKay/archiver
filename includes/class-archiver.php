@@ -48,22 +48,6 @@ class Archiver {
 	protected $snapshot_max_count;
 
 	/**
-	 * Whether to enable Archiver for localhost.
-	 *
-	 * @since    1.0.0
-	 * @access   protected
-	 */
-	protected $enable_for_localhost;
-
-	/**
-	 * IP's to check against for localhost detection..
-	 *
-	 * @since    1.0.0
-	 * @access   protected
-	 */
-	protected $localhost_ips;
-
-	/**
      * Wayback machine constants.
      *
      * @since  1.0.0
@@ -139,8 +123,7 @@ class Archiver {
 	/**
 	 * Check whether or not Archiver can run.
 	 *
-	 * This function is used to determine whether or not Archiver can run, based
-	 * on things like localhost vs production server, etc.
+	 * This allows for turning Archiver on/off based on environment, for example.
 	 *
 	 * @since 1.0.0
 	 *
@@ -148,12 +131,7 @@ class Archiver {
 	 */
 	public function can_run() {
 
-		// Check if we're working local, and if that's allowed.
-		if ( ! $this->enable_for_localhost && in_array( $_SERVER['REMOTE_ADDR'], $this->localhost_ips ) ) {
-			return false;
-		}
-
-		return true;
+		return apply_filters( 'archiver_can_run', __return_true() );
 	}
 
 	/**
@@ -179,26 +157,6 @@ class Archiver {
 		 * @filter archiver_snapshot_max_count
 		 */
 		$this->snapshot_max_count = apply_filters( 'archiver_snapshot_max_count', 20 );
-
-		/**
-		 * Filter whether to enable on localhost.
-		 *
-		 * Default: FALSE
-		 *
-		 * @filter archiver_enable_for_local_host
-		 */
-		$this->enable_for_localhost = apply_filters( 'archiver_enable_for_local_host', __return_false() );
-
-		/**
-		 * Filter IP's to check against for determining localhost.
-		 *
-		 * @filter archiver_enable_for_local_host
-		 */
-		$localhost_ips = array(
-			'127.0.0.1',
-			'::1',
-		);
-		$this->localhost_ips = apply_filters( 'archiver_localhost_ips', $localhost_ips );
 
 		// Set up minification prefix.
 		$this->min_suffix = ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) ? '' : '.min';
@@ -241,7 +199,7 @@ class Archiver {
 			add_action( 'admin_bar_menu', array( $this, 'add_admin_bar_links' ), 999 );
 
 		} else {
-			add_action( 'admin_notices', array( $this, 'do_admin_notice_localhost' ) );
+			add_action( 'admin_notices', array( $this, 'do_admin_notice_disabled' ) );
 		}
 
 	}
@@ -852,13 +810,13 @@ class Archiver {
 	}
 
 	/**
-	 * Output admin notice to indicate localhost.
+	 * Output admin notice if Archiver is disabled via the can_run() filter.
 	 *
 	 * @since 1.0.0
 	 */
-	public function do_admin_notice_localhost() {
+	public function do_admin_notice_disabled() {
 
-		$id = 'archiver-notice-localhost';
+		$id = 'archiver-notice-disabled';
 
 		$dismiss_notice_key = 'archiver_dismiss_notice_' . $id;
 		if ( get_user_meta( get_current_user_id(), $dismiss_notice_key ) ) {
@@ -866,7 +824,7 @@ class Archiver {
 		}
 
 		$class = 'archiver-notice notice notice-error is-dismissible';
-		$message = __( "Archiver is disabled while you are working locally.", 'archiver' );
+		$message = __( "Archiver is currently disabled.", 'archiver' );
 
 		printf( '<div id="%s" class="%s"><p>%s</p></div>', $id, $class, $message );
 
