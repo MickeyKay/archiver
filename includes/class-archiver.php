@@ -48,14 +48,14 @@ class Archiver {
 	protected $snapshot_max_count;
 
 	/**
-     * Wayback machine constants.
-     *
-     * @since  1.0.0
-     *
-     * @see    See https://github.com/internetarchive/wayback/tree/master/wayback-cdx-server
-     *
-     * @var    string
-     */
+	 * Wayback machine constants.
+	 *
+	 * @since  1.0.0
+	 *
+	 * @see    See https://github.com/internetarchive/wayback/tree/master/wayback-cdx-server
+	 *
+	 * @var    string
+	 */
 	protected $wayback_machine_url_save;
 	protected $wayback_machine_url_fetch_archives;
 	protected $wayback_machine_url_view;
@@ -78,19 +78,19 @@ class Archiver {
 	protected static $instance = null;
 
 	/**
-     * Creates or returns an instance of this class.
-     *
-     * @return    Archiver    A single instance of this class.
-     */
-    public static function get_instance( $args = array() ) {
+	 * Creates or returns an instance of this class.
+	 *
+	 * @return    Archiver    A single instance of this class.
+	 */
+	public static function get_instance( $args = array() ) {
 
-        if ( null == self::$instance ) {
-            self::$instance = new self( $args );
-        }
+		if ( null == self::$instance ) {
+			self::$instance = new self( $args );
+		}
 
-        return self::$instance;
+		return self::$instance;
 
-    }
+	}
 
 	/**
 	 * Define the core functionality of the plugin.
@@ -185,7 +185,7 @@ class Archiver {
 			add_action( 'profile_update', array( $this, 'trigger_user_snapshot' ), 10, 3 );
 
 			// Add Post Type metaboxes.
-		    add_action( 'add_meta_boxes', array( $this, 'add_post_meta_box' ) );
+			add_action( 'add_meta_boxes', array( $this, 'add_post_meta_box' ) );
 
 			// Add Term metaboxes.
 			add_action( 'admin_init', array( $this, 'add_term_meta_box' ) );
@@ -699,10 +699,10 @@ class Archiver {
 
 				/**
 				 * Depending on whether the user we're editing is the
-                 * currently logged in user, or another user, we see
-                 * either the "profile" screen or the "user-edit"
-                 * screen, each of which must be handled differently.
-                 */
+				 * currently logged in user, or another user, we see
+				 * either the "profile" screen or the "user-edit"
+				 * screen, each of which must be handled differently.
+				 */
 				if ( ! empty( $_GET['user_id'] ) ) {
 					$user_id = intval( $_GET['user_id'] );
 				} else {
@@ -734,7 +734,7 @@ class Archiver {
 	public function get_current_permalink_public() {
 
 		global $wp;
-  		$permalink = add_query_arg( $_SERVER['QUERY_STRING'], '', home_url( $wp->request ) );
+		$permalink = add_query_arg( $_SERVER['QUERY_STRING'], '', home_url( $wp->request ) );
 
 		/**
 		 * Filter the permalink generated for an public screen.
