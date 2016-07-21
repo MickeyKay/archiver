@@ -824,7 +824,7 @@ class Archiver {
 		}
 
 		$class = 'archiver-notice notice notice-error is-dismissible';
-		$message = __( "Archiver is currently disabled.", 'archiver' );
+		$message = __( "Archiver is currently disabled via the <code>archiver_can_run</code> filter.", 'archiver' );
 
 		printf( '<div id="%s" class="%s"><p>%s</p></div>', $id, $class, $message );
 
