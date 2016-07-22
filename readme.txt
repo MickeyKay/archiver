@@ -4,7 +4,7 @@ Donate link:       http://wordpress.org/plugins/archiver
 Tags:              archive, post, content, wayback, machine
 Requires at least: 3.5
 Tested up to:      4.1
-Stable tag:        1.0.2
+Stable tag:        1.0.4
 License:           GPLv2 or later
 License URI:       http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -54,6 +54,9 @@ Also available via Github: https://github.com/MickeyKay/archiver
 
 == Changelog ==
 
+= 1.0.4 =
+* Fix error 500 error due to calling method on non-object.
+
 = 1.0.3 =
 * Remove unreliable localhost detection.
 
@@ -67,6 +70,9 @@ Also available via Github: https://github.com/MickeyKay/archiver
 * First release.
 
 == Upgrade Notice ==
+
+= 1.0.4 =
+* Fix error 500 error due to calling method on non-object.
 
 = 1.0.3 =
 * Remove unreliable localhost detection.
