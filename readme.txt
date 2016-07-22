@@ -54,6 +54,9 @@ Also available via Github: https://github.com/MickeyKay/archiver
 
 == Changelog ==
 
+= 1.0.5 =
+* Add missing max count limit on metabox output of snapshots.
+
 = 1.0.4 =
 * Fix error 500 error due to calling method on non-object.
 
@@ -70,6 +73,9 @@ Also available via Github: https://github.com/MickeyKay/archiver
 * First release.
 
 == Upgrade Notice ==
+
+= 1.0.5 =
+* Add missing max count limit on metabox output of snapshots.
 
 = 1.0.4 =
 * Fix error 500 error due to calling method on non-object.
