@@ -481,6 +481,9 @@ class Archiver {
 
 		if ( ! empty( $snapshots ) ) {
 
+			// Only show a limited number of snapshots.
+			$snapshots = array_slice( $snapshots, 0, $this->snapshot_max_count );
+
 			$date_format = get_option( 'date_format' );
 			$time_format = get_option( 'time_format' );
 			$gmt_offset = get_option( 'gmt_offset' );
