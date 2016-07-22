@@ -282,10 +282,10 @@ class Archiver {
 
 		$url = $_REQUEST['url'];
 		$response = $this->trigger_url_snapshot( $url );
-		$error_codes = $response->get_error_codes();
-		$error_messages = $response->get_error_messages();
 
 		if ( is_wp_error( $response ) ) {
+			$error_codes = $response->get_error_codes();
+			$error_messages = $response->get_error_messages();
 			wp_send_json_error( $error_codes[0] . ': ' . $error_messages[0] );
 		} else {
 			wp_send_json_success();
