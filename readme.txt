@@ -54,6 +54,9 @@ Also available via Github: https://github.com/MickeyKay/archiver
 
 == Changelog ==
 
+= 1.0.3 =
+* Remove unreliable localhost detection.
+
 = 1.0.2 =
 * Fix: fix issue in which directly referencing array index on function call caused issues in PHP < 5.4.
 
@@ -64,6 +67,9 @@ Also available via Github: https://github.com/MickeyKay/archiver
 * First release.
 
 == Upgrade Notice ==
+
+= 1.0.3 =
+* Remove unreliable localhost detection.
 
 = 1.0.2 =
 * Fix: fix issue in which directly referencing array index on function call caused issues in PHP < 5.4.
