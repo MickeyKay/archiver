@@ -387,7 +387,7 @@ class Archiver {
 		$taxonomies = apply_filters( 'archiver_taxonomies', get_taxonomies() );
 
 		$archiver_taxonomy_slugs = array_map(
-			create_function( '$taxonomy', 'return "archiver-" . $taxonomy;'),
+			create_function( '$taxonomy', 'return "archiver-" . $taxonomy;' ),
 			$taxonomies
 		);
 
@@ -415,7 +415,6 @@ class Archiver {
 
 		$object_type = get_current_screen()->taxonomy;
 		$this->output_manual_meta_box( $object_type );
-
 
 	}
 
@@ -490,7 +489,7 @@ class Archiver {
 
 			echo '<ul>';
 
-			foreach( $snapshots as $snapshot ) {
+			foreach ( $snapshots as $snapshot ) {
 
 				// Convert to Y-m-d H:i:s format for get_date_from_gmt().
 				$date_time = date( 'Y-m-d H:i:s', strtotime( $snapshot['timestamp'] ) );
@@ -548,7 +547,7 @@ class Archiver {
 			'href'  => $archive_link,
 			'meta'   => array(
 				'target' => '_blank',
-			)
+			),
 		) );
 
 		$wp_admin_bar->add_node( array(
@@ -558,7 +557,7 @@ class Archiver {
 			'href'   => $archive_link,
 			'meta'   => array(
 				'target' => '_blank',
-			)
+			),
 		) );
 
 		$wp_admin_bar->add_node( array(
@@ -586,7 +585,7 @@ class Archiver {
 		$fetch_url = add_query_arg( array(
 			'url'    => $url,
 			'output' => 'json',
-			), $this->wayback_machine_url_fetch_archives );
+		), $this->wayback_machine_url_fetch_archives );
 
 		$response = wp_remote_get( $fetch_url );
 
@@ -612,7 +611,7 @@ class Archiver {
 			// Set up snapshots.
 			$snapshots = array();
 
-			foreach( $data as $snapshot ) {
+			foreach ( $data as $snapshot ) {
 
 				$keyed_snapshot = array();
 
@@ -649,7 +648,6 @@ class Archiver {
 			} else {
 				$this->current_permalink = $this->get_current_permalink_public();
 			}
-
 		}
 
 		/**
@@ -678,7 +676,7 @@ class Archiver {
 		$object_type = $current_screen->base;
 
 		// Generate permalink based on current object type.
-		switch( $object_type ) {
+		switch ( $object_type ) {
 
 			// Post.
 			case 'post':
@@ -827,10 +825,9 @@ class Archiver {
 		}
 
 		$class = 'archiver-notice notice notice-error is-dismissible';
-		$message = __( "Archiver is currently disabled via the <code>archiver_can_run</code> filter.", 'archiver' );
+		$message = __( 'Archiver is currently disabled via the <code>archiver_can_run</code> filter.', 'archiver' );
 
 		printf( '<div id="%s" class="%s"><p>%s</p></div>', $id, $class, $message );
 
 	}
-
 }
