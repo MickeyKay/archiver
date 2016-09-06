@@ -10,6 +10,10 @@
 
 Automatically create Wayback Machine snapshots of your site when you update your content.
 
+[![Code Climate](https://codeclimate.com/github/MickeyKay/archiver/badges/gpa.svg)](https://codeclimate.com/github/MickeyKay/archiver)
+[![Test Coverage](https://codeclimate.com/github/MickeyKay/archiver/badges/coverage.svg)](https://codeclimate.com/github/MickeyKay/archiver/coverage)
+[![Issue Count](https://codeclimate.com/github/MickeyKay/archiver/badges/issue_count.svg)](https://codeclimate.com/github/MickeyKay/archiver)
+
 ## Description ##
 
 **Like this plugin? Please consider [leaving a 5-star review](https://wordpress.org/support/view/plugin-reviews/archiver).**
