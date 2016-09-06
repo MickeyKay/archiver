@@ -19,6 +19,7 @@ class Archiver {
 	 * The unique identifier of this plugin.
 	 *
 	 * @since    1.0.0
+	 * @var mixed
 	 * @access   protected
 	 */
 	protected $slug;
@@ -27,6 +28,7 @@ class Archiver {
 	 * The display name of this plugin.
 	 *
 	 * @since    1.0.0
+	 * @var mixed
 	 * @access   protected
 	 */
 	protected $name;
@@ -35,6 +37,7 @@ class Archiver {
 	 * Minification prefix.
 	 *
 	 * @since    1.0.0
+	 * @var mixed
 	 * @access   protected
 	 */
 	protected $min_suffix = '';
@@ -43,6 +46,7 @@ class Archiver {
 	 * The max number of snapshots to retrieve.
 	 *
 	 * @since    1.0.0
+	 * @var mixed
 	 * @access   protected
 	 */
 	protected $snapshot_max_count;
@@ -84,7 +88,7 @@ class Archiver {
 	 */
 	public static function get_instance( $args = array() ) {
 
-		if ( null == self::$instance ) {
+		if ( null === self::$instance ) {
 			self::$instance = new self( $args );
 		}
 
@@ -229,7 +233,7 @@ class Archiver {
 	public function trigger_post_snapshot( $post_id ) {
 
 		// Don't do anything if the post isn't published.
-		if ( 'publish' != get_post_status( $post_id ) || wp_is_post_revision( $post_id ) ) {
+		if ( 'publish' !== get_post_status( $post_id ) || wp_is_post_revision( $post_id ) ) {
 			return;
 		}
 
@@ -454,7 +458,7 @@ class Archiver {
 	 */
 	public function output_manual_meta_box( $object_type ) {
 
-		// Enqueue
+		// Enqueue.
 		wp_enqueue_script( 'post' );
 
 		echo '<div id="poststuff">';
@@ -589,7 +593,7 @@ class Archiver {
 
 		$response = wp_remote_get( $fetch_url );
 
-		if ( 200 == wp_remote_retrieve_response_code( $response ) ) {
+		if ( 200 === wp_remote_retrieve_response_code( $response ) ) {
 
 			$data = json_decode( $response['body'] );
 
